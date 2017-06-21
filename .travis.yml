@@ -1,0 +1,10 @@
+sudo: required
+
+language: java
+
+services:
+  - docker
+
+script:
+- mvn verify
+- mvn coveralls:report
