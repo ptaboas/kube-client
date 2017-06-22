@@ -236,7 +236,14 @@
 			<scope>test</scope>
 		</dependency>
 
-
 	</dependencies>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>sonatype-nexus-snapshots</id>
+			<name>Sonatype Nexus Snapshots</name>
+			<url>${sonatypeOssDistMgmtSnapshotsUrl}</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 </project>

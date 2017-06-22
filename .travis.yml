@@ -1,10 +1,16 @@
-sudo: required
-
 language: java
+
+sudo: required
 
 services:
   - docker
 
+cache:
+  directories:
+    - '$HOME/.m2/repository'
+
 script:
 - mvn verify
-- mvn coveralls:report
+
+after_success:
+- $TRAVIS_BRANCH == "master" && mvn coveralls:report && mvn deploy:deploy --settings=./.travis/settings.xml"
