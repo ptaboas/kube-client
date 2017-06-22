@@ -37,7 +37,7 @@ public class NamespacesIT {
 				.verbose(false)
 			.build();
 		await().atMost(10,TimeUnit.SECONDS).until(()->setupTest.health().await().getNow().equals("ok"));
-		await().atMost(10,TimeUnit.SECONDS).until(()->client.getServiceAccount("default","default").await().getNow() != null);
+		await().atMost(10,TimeUnit.SECONDS).until(()->setupTest.getServiceAccount("default","default").await().getNow() != null);
 		
 		ServiceAccount serviceaAcount = setupTest.getServiceAccount("default", "default").await().getNow();
 		Secret secret = setupTest.getSecret("default",serviceaAcount.getSecrets().get(0).getName()).await().getNow();
