@@ -13,8 +13,5 @@ script:
 - mvn verify
 - mvn coveralls:report
 
-deploy:
-  provider: script
-  script: mvn deploy:deploy --settings=./.travis/settings.xml
-  on:
-    branch: master
+after_success:
+- .travis/deploy.sh
