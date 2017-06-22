@@ -13,4 +13,4 @@ script:
 - mvn verify
 
 after_success:
-- $TRAVIS_BRANCH == "master" && mvn coveralls:report && mvn deploy:deploy --settings=./.travis/settings.xml"
+- $TRAVIS_BRANCH == "master" && mvn coveralls:report && mvn deploy:deploy --settings=./.travis/settings.xml
