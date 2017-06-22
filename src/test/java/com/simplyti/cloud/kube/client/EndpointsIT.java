@@ -32,16 +32,18 @@ public class EndpointsIT {
 	
 	@Before
 	public void createClient() throws InterruptedException {
-		this.client = KubeClient.builder()
-				.server("localhost", 8080)
-				.verbose(true)
-			.build();
-		
 		this.setupTest = KubeClient.builder()
 				.server("localhost", 8080)
 				.verbose(false)
 			.build();
+		await().atMost(10,TimeUnit.SECONDS).until(()->setupTest.health().await().getNow().equals("ok"));
+
 		setupTest.createNamespace("test").await();
+		
+		this.client = KubeClient.builder()
+				.server("localhost", 8080)
+				.verbose(true)
+			.build();
 	}
 	
 	@After

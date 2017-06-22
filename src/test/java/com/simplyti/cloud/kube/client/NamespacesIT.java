@@ -32,16 +32,17 @@ public class NamespacesIT {
 	
 	@Before
 	public void createClient() throws InterruptedException {
-		
 		this.setupTest = KubeClient.builder()
 				.server("localhost", 8080)
 				.verbose(false)
 			.build();
+		await().atMost(10,TimeUnit.SECONDS).until(()->setupTest.health().await().getNow().equals("ok"));
 		
 		ServiceAccount serviceaAcount = setupTest.getServiceAccount("default", "default").await().getNow();
 		Secret secret = setupTest.getSecret("default",serviceaAcount.getSecrets().get(0).getName()).await().getNow();
 		String token = Base64.decode(Unpooled.wrappedBuffer(secret.getData().get("token").getBytes(CharsetUtil.UTF_8))).toString(CharsetUtil.UTF_8);
 		ByteBuf caCertificate = Base64.decode(Unpooled.wrappedBuffer(secret.getData().get("ca.crt").getBytes(CharsetUtil.UTF_8)));
+		
 		this.client = KubeClient.builder()
 				.server("localhost", 443)
 				.secure(new ByteBufInputStream(caCertificate),token)

@@ -22,16 +22,18 @@ public class ServiceAccountsIT {
 	
 	@Before
 	public void createClient() throws InterruptedException {
-		this.client = KubeClient.builder()
-				.server("localhost", 8080)
-				.verbose(true)
-			.build();
-		
 		this.setupTest = KubeClient.builder()
 				.server("localhost", 8080)
 				.verbose(false)
 			.build();
+		await().atMost(10,TimeUnit.SECONDS).until(()->setupTest.health().await().getNow().equals("ok"));
+		
 		setupTest.createNamespace("test").await();
+		
+		this.client = KubeClient.builder()
+				.server("localhost", 8080)
+				.verbose(true)
+			.build();
 	}
 	
 	@After
@@ -42,6 +44,8 @@ public class ServiceAccountsIT {
 	
 	@Test
 	public void test() throws InterruptedException{
+		await().atMost(10,TimeUnit.SECONDS).until(()->client.getServiceAccount("test","default").await().getNow() != null);
+		
 		Future<ServiceAccount> sa = client.getServiceAccount("test","default").await();
 		assertTrue(sa.isSuccess());
 		

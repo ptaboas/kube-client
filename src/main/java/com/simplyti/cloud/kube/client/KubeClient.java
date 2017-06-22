@@ -24,6 +24,7 @@ import com.simplyti.cloud.kube.client.reqs.CreateServiceRequest;
 import com.simplyti.cloud.kube.client.reqs.DeleteNamespaceRequest;
 import com.simplyti.cloud.kube.client.reqs.GetEndpointEventsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetEndpointRequest;
+import com.simplyti.cloud.kube.client.reqs.GetHealthRequest;
 import com.simplyti.cloud.kube.client.reqs.GetNamespacesRequest;
 import com.simplyti.cloud.kube.client.reqs.GetSecretRequest;
 import com.simplyti.cloud.kube.client.reqs.GetSecretsRequest;
@@ -75,6 +76,10 @@ public class KubeClient {
 	
 	private Class<? extends Channel> channelClass() {
 		return NioSocketChannel.class;
+	}
+	
+	public Future<String> health() {
+		return sendRequest(new GetHealthRequest());
 	}
 
 	public Future<ServiceList> getServices() {

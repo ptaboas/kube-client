@@ -18,6 +18,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.util.AttributeKey;
+import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.Promise;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -51,8 +52,12 @@ public class KubernetesApiResponseHandler extends SimpleChannelInboundHandler<Ob
 			observable.notifyObservers(response);
 		}else{
 			Promise<Object> future = ctx.channel().attr(AttributeKey.<Promise<Object>>valueOf(KubeClient.SINGLE_RESPONSE_PROMISE_NAME)).get();
-			Object response = mapper.readValue((InputStream)new ByteBufInputStream(content), responseclass);
-			future.setSuccess(response);
+			if(responseclass.equals(String.class)){
+				future.setSuccess(content.readSlice(content.readableBytes()).toString(CharsetUtil.UTF_8));
+			}else{
+				Object response = mapper.readValue((InputStream)new ByteBufInputStream(content), responseclass);
+				future.setSuccess(response);
+			}
 		}
 	}
 
