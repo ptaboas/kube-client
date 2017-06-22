@@ -11,6 +11,10 @@ cache:
 
 script:
 - mvn verify
+- mvn coveralls:report
 
-after_success:
-- $TRAVIS_BRANCH == "master" && mvn coveralls:report && mvn deploy:deploy --settings=./.travis/settings.xml
+deploy:
+  provider: script
+  script: mvn deploy:deploy --settings=./.travis/settings.xml
+  on:
+    branch: master
