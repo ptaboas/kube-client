@@ -13,6 +13,8 @@ import org.junit.Test;
 
 import com.simplyti.cloud.kube.client.domain.ServiceAccount;
 
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.Future;
 
 public class ServiceAccountsIT {
@@ -22,7 +24,9 @@ public class ServiceAccountsIT {
 	
 	@Before
 	public void createClient() throws InterruptedException {
+		EventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
 		this.setupTest = KubeClient.builder()
+				.eventLoop(eventLoopGroup)
 				.server("localhost", 8080)
 				.verbose(false)
 			.build();
@@ -31,6 +35,7 @@ public class ServiceAccountsIT {
 		setupTest.createNamespace("test").await();
 		
 		this.client = KubeClient.builder()
+				.eventLoop(eventLoopGroup)
 				.server("localhost", 8080)
 				.verbose(true)
 			.build();

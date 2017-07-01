@@ -19,7 +19,7 @@ public class KubeApiEventChunkDecoder extends MessageToMessageDecoder<HttpObject
 	protected void decode(ChannelHandlerContext ctx, HttpObject msg, List<Object> out) throws Exception {
 		Class<?> responseclass = ctx.channel().attr(KubernetesApiRequestEncoder.RESPONSE_CLASS).get();
 		
-		if(Event.class.isAssignableFrom((Class<?>) responseclass)){
+		if(responseclass!=null && Event.class.isAssignableFrom((Class<?>) responseclass)){
 			if(HttpResponse.class.isAssignableFrom(msg.getClass())){
 				// TODO check status
 			}else if(HttpContent.class.isAssignableFrom(msg.getClass())){

@@ -23,6 +23,8 @@ import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.EventType;
 import com.simplyti.cloud.kube.client.observe.Observable;
 
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.Future;
 
 public class EndpointsIT {
@@ -32,15 +34,18 @@ public class EndpointsIT {
 	
 	@Before
 	public void createClient() throws InterruptedException {
+		EventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
 		this.setupTest = KubeClient.builder()
+				.eventLoop(eventLoopGroup)
 				.server("localhost", 8080)
 				.verbose(false)
 			.build();
-		await().atMost(10,TimeUnit.SECONDS).until(()->setupTest.health().await().getNow().equals("ok"));
+		await().atMost(100,TimeUnit.SECONDS).until(()->setupTest.health().await().getNow().equals("ok"));
 
 		setupTest.createNamespace("test").await();
 		
 		this.client = KubeClient.builder()
+				.eventLoop(eventLoopGroup)
 				.server("localhost", 8080)
 				.verbose(true)
 			.build();
@@ -64,7 +69,7 @@ public class EndpointsIT {
 	public void observeEndpoints() throws InterruptedException{
 		EndpointList endpoints = client.getEndpoints().await().getNow();
 		List<Event<Endpoint>> receivedEvents = new ArrayList<>();
-		Observable<Endpoint> observable = client.observeEndpoints(endpoints.getMetadata().getResourceVersion()).onEvent(event->{
+		Observable<Endpoint> observable = client.observeEndpoints("test",endpoints.getMetadata().getResourceVersion()).onEvent(event->{
 			receivedEvents.add(event);
 		});
 		client.createEndpoint("test","nginx",Collections.singleton("192.168.1.1"),Collections.singleton(8080));

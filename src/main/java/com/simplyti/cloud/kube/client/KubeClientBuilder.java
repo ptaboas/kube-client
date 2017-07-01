@@ -4,13 +4,14 @@ import java.io.InputStream;
 
 import com.google.common.base.MoreObjects;
 
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.EventLoopGroup;
 
 public class KubeClientBuilder {
 	
 	private Address serverAddress;
 	private boolean verbose;
 	private SecurityOptions securityOptions;
+	private EventLoopGroup eventLoop;
 	
 	public KubeClientBuilder server(String host, int port) {
 		this.serverAddress = new Address(host,port);
@@ -18,12 +19,16 @@ public class KubeClientBuilder {
 	}
 	
 	public  KubeClient build() {
-		NioEventLoopGroup eventgrup = new NioEventLoopGroup(1);
-		return new  KubeClient(eventgrup.next(),serverAddress,verbose,MoreObjects.firstNonNull(securityOptions, SecurityOptions.NONE));
+		return new  KubeClient(eventLoop,serverAddress,verbose,MoreObjects.firstNonNull(securityOptions, SecurityOptions.NONE));
 	}
 
 	public KubeClientBuilder verbose(boolean verbose) {
 		this.verbose=verbose;
+		return this;
+	}
+	
+	public KubeClientBuilder eventLoop(EventLoopGroup eventLoop){
+		this.eventLoop=eventLoop;
 		return this;
 	}
 

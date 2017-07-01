@@ -4,6 +4,7 @@ services:
 
   etcd:
     image: quay.io/coreos/etcd:v3.1.5
+    restart: on-failure
     command: 
     - /usr/local/bin/etcd
     - --name=etcd0
@@ -19,7 +20,8 @@ services:
     - 2379:2379
     
   apiserver:
-    image: gcr.io/google_containers/hyperkube:v1.6.3
+    image: gcr.io/google_containers/hyperkube:v1.6.4
+    restart: on-failure
     command:
     - /hyperkube
     - apiserver
@@ -31,7 +33,7 @@ services:
     - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
     - --client-ca-file=/etc/kubernetes/ssl/ca.pem
     - --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem
-    - --v=2
+    - --v=1
     ports:
     - 8080:8080
     - 443:6443
@@ -39,16 +41,18 @@ services:
     - ${project.build.directory}/test-classes/kubernetes-ssl:/etc/kubernetes/ssl:ro
     
   scheduler:
-    image: gcr.io/google_containers/hyperkube:v1.6.3
+    image: gcr.io/google_containers/hyperkube:v1.6.4
+    restart: on-failure
     command:
     - /hyperkube
     - scheduler
     - --leader-elect=true
     - --master=http://apiserver:8080
-    - --v=2
+    - --v=1
 
   controller-manager:
-    image: gcr.io/google_containers/hyperkube:v1.6.3
+    image: gcr.io/google_containers/hyperkube:v1.6.4
+    restart: on-failure
     command:
     - /hyperkube
     - controller-manager
@@ -56,6 +60,30 @@ services:
     - --leader-elect=true
     - --root-ca-file=/etc/kubernetes/ssl/ca.pem
     - --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
-    - --v=2
+    - --v=1
     volumes:
     - ${project.build.directory}/test-classes/kubernetes-ssl:/etc/kubernetes/ssl:ro
+    
+  kubelet:
+    image: gcr.io/google_containers/hyperkube:v1.6.4
+    restart: on-failure
+    command:
+    - /hyperkube
+    - kubelet
+    - --containerized
+    - --allow-privileged=true
+    - --api-servers=http://apiserver:8080
+    - --cluster-dns=10.10.0.2
+    - --cluster-domain=cluster.local
+    - --container-runtime=docker
+    - --cgroups-per-qos=false
+    - --enforce-node-allocatable=
+    - --v=1
+    volumes:
+    - /:/rootfs:ro
+    - /sys:/sys:ro
+    - /var/run:/var/run:rw
+    - /var/lib/docker/:/var/lib/docker:rw
+    - /var/lib/kubelet:/var/lib/kubelet:rw
+    - /dev:/dev
+    privileged: true

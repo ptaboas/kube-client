@@ -21,6 +21,8 @@ import com.simplyti.cloud.kube.client.domain.ServiceAccount;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.base64.Base64;
 import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.Future;
@@ -32,7 +34,9 @@ public class NamespacesIT {
 	
 	@Before
 	public void createClient() throws InterruptedException {
+		EventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
 		this.setupTest = KubeClient.builder()
+				.eventLoop(eventLoopGroup)
 				.server("localhost", 8080)
 				.verbose(false)
 			.build();
@@ -45,6 +49,7 @@ public class NamespacesIT {
 		ByteBuf caCertificate = Base64.decode(Unpooled.wrappedBuffer(secret.getData().get("ca.crt").getBytes(CharsetUtil.UTF_8)));
 		
 		this.client = KubeClient.builder()
+				.eventLoop(eventLoopGroup)
 				.server("localhost", 443)
 				.secure(new ByteBufInputStream(caCertificate),token)
 				.verbose(true)

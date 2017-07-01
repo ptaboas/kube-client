@@ -9,6 +9,7 @@ import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.KubernetesResource;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 import lombok.Getter;
 
@@ -60,8 +61,8 @@ public class Observable<T extends KubernetesResource> {
 		return this.index;
 	}
 
-	public void close() {
-		channelReference.getAndSet(null).close();
+	public ChannelFuture close() {
+		return channelReference.getAndSet(null).close();
 	}
 
 	public void setChannel(Channel channel,Consumer<Observable<T>> doObserve) {

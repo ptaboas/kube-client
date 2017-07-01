@@ -1,22 +1,22 @@
 package com.simplyti.cloud.kube.client.reqs;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.simplyti.cloud.kube.client.domain.Service;
 
 import io.netty.handler.codec.http.HttpMethod;
 
 public class CreateServiceRequest extends KubernetesApiRequest {
 
-	public CreateServiceRequest(String namespace, String name, ImmutableSet<Integer> ports, Map<String, String> selector) {
+	public CreateServiceRequest(String namespace, String name, Collection<Integer> ports, Map<String, String> selector) {
 		super(HttpMethod.POST, "/api/v1/namespaces/"+namespace+"/services",serviceResource(namespace,name,ports,selector),Service.class);
 	}
 
-	private static Object serviceResource(String namespace, String name, ImmutableSet<Integer> ports,
+	private static Object serviceResource(String namespace, String name, Collection<Integer> ports,
 			Map<String, String> selector) {
 		return ImmutableMap.builder()
 			.put("kind", "Service")

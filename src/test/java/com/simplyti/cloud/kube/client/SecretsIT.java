@@ -15,7 +15,8 @@ import static org.junit.Assert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.greaterThan;
 
-
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.Future;
 
 public class SecretsIT {
@@ -25,7 +26,9 @@ public class SecretsIT {
 	
 	@Before
 	public void createClient() throws InterruptedException {
+		EventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
 		this.setupTest = KubeClient.builder()
+				.eventLoop(eventLoopGroup)
 				.server("localhost", 8080)
 				.verbose(false)
 			.build();
@@ -34,6 +37,7 @@ public class SecretsIT {
 		setupTest.createNamespace("test").await();
 		
 		this.client = KubeClient.builder()
+				.eventLoop(eventLoopGroup)
 				.server("localhost", 8080)
 				.verbose(true)
 			.build();

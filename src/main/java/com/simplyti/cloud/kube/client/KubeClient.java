@@ -1,37 +1,44 @@
 package com.simplyti.cloud.kube.client;
 
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableSet;
+import com.simplyti.cloud.kube.client.domain.Deployment;
 import com.simplyti.cloud.kube.client.domain.Endpoint;
 import com.simplyti.cloud.kube.client.domain.EndpointList;
 import com.simplyti.cloud.kube.client.domain.KubernetesResource;
 import com.simplyti.cloud.kube.client.domain.Namespace;
 import com.simplyti.cloud.kube.client.domain.NamespaceList;
+import com.simplyti.cloud.kube.client.domain.Pod;
+import com.simplyti.cloud.kube.client.domain.Probe;
 import com.simplyti.cloud.kube.client.domain.Secret;
 import com.simplyti.cloud.kube.client.domain.SecretList;
 import com.simplyti.cloud.kube.client.domain.Service;
 import com.simplyti.cloud.kube.client.domain.ServiceAccount;
 import com.simplyti.cloud.kube.client.domain.ServiceList;
 import com.simplyti.cloud.kube.client.observe.Observable;
+import com.simplyti.cloud.kube.client.reqs.CreateDeploymentRequest;
 import com.simplyti.cloud.kube.client.reqs.CreateEndpointRequest;
 import com.simplyti.cloud.kube.client.reqs.CreateNamespaceRequest;
+import com.simplyti.cloud.kube.client.reqs.CreatePodRequest;
 import com.simplyti.cloud.kube.client.reqs.CreateServiceRequest;
 import com.simplyti.cloud.kube.client.reqs.DeleteNamespaceRequest;
 import com.simplyti.cloud.kube.client.reqs.GetEndpointEventsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetEndpointRequest;
 import com.simplyti.cloud.kube.client.reqs.GetHealthRequest;
 import com.simplyti.cloud.kube.client.reqs.GetNamespacesRequest;
+import com.simplyti.cloud.kube.client.reqs.GetPodRequest;
 import com.simplyti.cloud.kube.client.reqs.GetSecretRequest;
 import com.simplyti.cloud.kube.client.reqs.GetSecretsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetServiceAccount;
 import com.simplyti.cloud.kube.client.reqs.GetServiceEventsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetServicesRequest;
 import com.simplyti.cloud.kube.client.reqs.KubernetesApiRequest;
+import com.simplyti.cloud.kube.client.reqs.KubernetesCommandExec;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -90,8 +97,28 @@ public class KubeClient {
 		return sendRequest(new GetEndpointRequest());
 	}
 
-	public Future<Service> createService(String namespace, String name, ImmutableSet<Integer> ports,Map<String, String> labelSelector) {
+	public Future<Service> createService(String namespace, String name, Collection<Integer> ports,Map<String, String> labelSelector) {
 		return sendRequest(new CreateServiceRequest(namespace,name,ports,labelSelector));
+	}
+	
+	public Future<Deployment> createDeployment(String namespace, String name, String image, Map<String, String> labels,Collection<String> command, Probe readinessProbe) {
+		return sendRequest(new CreateDeploymentRequest(namespace,name,image,labels,command,readinessProbe));
+	}
+	
+	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels) {
+		return createPod(namespace,name,image,labels,null);
+	}
+	
+	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Collection<String> command) {
+		return createPod(namespace,name,image,labels,command,null);
+	}
+	
+	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Collection<String> command, Probe readinessProbe) {
+		return sendRequest(new CreatePodRequest(namespace,name,image,labels,command,readinessProbe));
+	}
+	
+	public Future<Pod> getPod(String namespace, String name) {
+		return sendRequest(new GetPodRequest(namespace,name));
 	}
 
 	public Future<Namespace> createNamespace(String name) {
@@ -134,11 +161,15 @@ public class KubeClient {
 	}
 	
 	public Observable<Service> observeServices(String index) {
-		return observeServices(index,newIndex->new GetServiceEventsRequest(newIndex));
+		return observeServices(index,newIndex->new GetServiceEventsRequest(index));
 	}
 	
 	public Observable<Endpoint> observeEndpoints(String index) {
-		return observeServices(index,newIndex->new GetEndpointEventsRequest(newIndex));
+		return observeServices(index,newIndex->new GetEndpointEventsRequest(index));
+	}
+	
+	public Observable<Endpoint> observeEndpoints(String namespace, String index) {
+		return observeServices(index,newIndex->new GetEndpointEventsRequest(namespace,index));
 	}
 	
 	public <T extends KubernetesResource> Observable<T> observeServices(String index,Function<String,KubernetesApiRequest> reqSupplier) {
@@ -157,4 +188,17 @@ public class KubeClient {
 		});
 	}
 
+
+	public Future<byte[]> executeCommand(String namespace, String name, String command) {
+		Promise<byte[]> promise = eventLoopGroup.next().newPromise();
+		pool.acquire().addListener(future->{
+			 Channel channel = (Channel) future.get();
+			 promise.addListener(done->channel.close());
+			 channel.attr(SINGLE_RESPONSE_PROMISE).set(promise);
+			 channel.writeAndFlush(new KubernetesCommandExec(namespace,name,command));
+		});
+		return promise;
+	}
+
+	
 }
