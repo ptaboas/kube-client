@@ -9,16 +9,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableSet;
 import com.simplyti.cloud.kube.client.domain.Deployment;
-import com.simplyti.cloud.kube.client.domain.Pod;
 import com.simplyti.cloud.kube.client.domain.PodList;
-import com.simplyti.cloud.kube.client.domain.PodPhase;
-import com.simplyti.cloud.kube.client.domain.Probe;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
 import io.netty.channel.EventLoopGroup;
