@@ -10,7 +10,8 @@ import lombok.Getter;
 public class PodStatus {
 	
 	private final List<ContainerStatus> containerStatuses;
-	
+	private final String hostIP;
+	private final String podIP;
 	private final PodPhase phase;
 
 }

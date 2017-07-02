@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
-import com.simplyti.cloud.kube.client.domain.Deployment;
+import com.simplyti.cloud.kube.client.domain.Pod;
 import com.simplyti.cloud.kube.client.domain.Probe;
 
 import io.netty.handler.codec.http.HttpMethod;
@@ -13,7 +13,7 @@ import io.netty.handler.codec.http.HttpMethod;
 public class CreatePodRequest extends KubernetesApiRequest {
 	
 	public CreatePodRequest(String namespace, String name, String image, Map<String, String> labels,Collection<String> command, Probe readinessProbe) {
-		super(HttpMethod.POST, "/api/v1/namespaces/"+namespace+"/pods",serviceResource(namespace,name,image,labels,command,readinessProbe),Deployment.class);
+		super(HttpMethod.POST, "/api/v1/namespaces/"+namespace+"/pods",serviceResource(namespace,name,image,labels,command,readinessProbe),Pod.class);
 	}
 
 	private static Object serviceResource(String namespace, String name, String image,

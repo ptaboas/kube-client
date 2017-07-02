@@ -105,8 +105,12 @@ public class KubeClient {
 		return sendRequest(new CreateDeploymentRequest(namespace,name,image,labels,command,readinessProbe));
 	}
 	
+	public Future<Deployment> createDeployment(String namespace, String name, String image, Map<String, String> labels, Probe readinessProbe) {
+		return sendRequest(new CreateDeploymentRequest(namespace,name,image,labels,null,readinessProbe));
+	}
+	
 	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels) {
-		return createPod(namespace,name,image,labels,null);
+		return createPod(namespace,name,image,labels,null,null);
 	}
 	
 	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Collection<String> command) {
@@ -115,6 +119,10 @@ public class KubeClient {
 	
 	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Collection<String> command, Probe readinessProbe) {
 		return sendRequest(new CreatePodRequest(namespace,name,image,labels,command,readinessProbe));
+	}
+	
+	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Probe readinessProbe) {
+		return createPod(namespace,name,image,labels,null,readinessProbe);
 	}
 	
 	public Future<Pod> getPod(String namespace, String name) {

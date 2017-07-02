@@ -9,8 +9,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableSet;
 import com.simplyti.cloud.kube.client.domain.Pod;
 import com.simplyti.cloud.kube.client.domain.PodPhase;
+import com.simplyti.cloud.kube.client.domain.Probe;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
@@ -57,6 +59,24 @@ public class PodsIT {
 		
 		await().pollInterval(2, TimeUnit.SECONDS).atMost(50,TimeUnit.SECONDS).until(()->client.getPod("test","test").await().getNow().getStatus().getPhase().equals(PodPhase.RUNNING));
 	}
+	
+	@Test
+	public void createPodWithReadyness() throws InterruptedException{
+		Future<Pod> futurePod = client.createPod("test","test","nginx", Collections.singletonMap("app", "test"),
+				Probe.exec(ImmutableSet.of("cat","/tmp/healthy"),1,1,1,1)).await();
+		assertTrue(futurePod.isSuccess());
+		await().pollInterval(2, TimeUnit.SECONDS).atMost(50,TimeUnit.SECONDS).until(()->client.getPod("test","test").await().getNow().getStatus().getPhase().equals(PodPhase.RUNNING));
+		
+		Pod pod = client.getPod("test","test").await().getNow();
+		assertThat(pod.getStatus().getContainerStatuses().get(0).getReady(),equalTo(false));
+		
+		client.executeCommand("test","test","touch /tmp/healthy");
+		await().pollInterval(2, TimeUnit.SECONDS).atMost(50,TimeUnit.SECONDS).until(()->client.getPod("test","test").await().getNow().getStatus().getContainerStatuses().get(0).getReady()==true);
+		pod = client.getPod("test","test").await().getNow();
+		assertThat(pod.getStatus().getContainerStatuses().get(0).getReady(),equalTo(true));
+	}
+	
+	
 	
 	@Test
 	public void executeSingleCommand() throws InterruptedException{
