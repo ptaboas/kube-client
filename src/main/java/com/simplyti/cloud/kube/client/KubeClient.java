@@ -14,6 +14,7 @@ import com.simplyti.cloud.kube.client.domain.KubernetesResource;
 import com.simplyti.cloud.kube.client.domain.Namespace;
 import com.simplyti.cloud.kube.client.domain.NamespaceList;
 import com.simplyti.cloud.kube.client.domain.Pod;
+import com.simplyti.cloud.kube.client.domain.PodList;
 import com.simplyti.cloud.kube.client.domain.Probe;
 import com.simplyti.cloud.kube.client.domain.Secret;
 import com.simplyti.cloud.kube.client.domain.SecretList;
@@ -32,6 +33,7 @@ import com.simplyti.cloud.kube.client.reqs.GetEndpointRequest;
 import com.simplyti.cloud.kube.client.reqs.GetHealthRequest;
 import com.simplyti.cloud.kube.client.reqs.GetNamespacesRequest;
 import com.simplyti.cloud.kube.client.reqs.GetPodRequest;
+import com.simplyti.cloud.kube.client.reqs.GetPodsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetSecretRequest;
 import com.simplyti.cloud.kube.client.reqs.GetSecretsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetServiceAccount;
@@ -106,7 +108,11 @@ public class KubeClient {
 	}
 	
 	public Future<Deployment> createDeployment(String namespace, String name, String image, Map<String, String> labels, Probe readinessProbe) {
-		return sendRequest(new CreateDeploymentRequest(namespace,name,image,labels,null,readinessProbe));
+		return createDeployment(namespace, name, image, labels, null, readinessProbe);
+	}
+	
+	public Future<Deployment> createDeployment(String namespace, String name, String image, Map<String, String> labels) {
+		return createDeployment(namespace, name, image, labels, null);
 	}
 	
 	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels) {
@@ -127,6 +133,10 @@ public class KubeClient {
 	
 	public Future<Pod> getPod(String namespace, String name) {
 		return sendRequest(new GetPodRequest(namespace,name));
+	}
+	
+	public Future<PodList> getpods(String namespace) {
+		return sendRequest(new GetPodsRequest(namespace));
 	}
 
 	public Future<Namespace> createNamespace(String name) {
@@ -208,5 +218,4 @@ public class KubeClient {
 		return promise;
 	}
 
-	
 }

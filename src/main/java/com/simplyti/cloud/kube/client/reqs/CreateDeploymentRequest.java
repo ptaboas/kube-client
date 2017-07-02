@@ -34,16 +34,27 @@ public class CreateDeploymentRequest extends KubernetesApiRequest {
 									.build())
 							.put("spec", ImmutableMap.builder()
 									.put("automountServiceAccountToken", false)
-									.put("containers",Collections.singleton(ImmutableMap.builder()
-										.put("name", name)
-										.put("image", image)
-										.put("command",command)
-										.put("readinessProbe",readinessProbe)
-										.build()))
+									.put("containers",Collections.singleton(container(name, image,command,readinessProbe)))
 									.build())
 							.build())
 					.build())
 			.build();
+	}
+	
+	private static Object container(String name, String image, Collection<String> command, Probe readinessProbe) {
+		ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
+		.put("name", name)
+		.put("image", image);
+		
+		if(command!=null){
+			builder.put("command",command);
+		}
+		
+		if(readinessProbe!=null){
+			builder.put("readinessProbe",readinessProbe);
+		}
+		
+		return builder.build();
 	}
 
 }
