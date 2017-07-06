@@ -21,6 +21,7 @@ import com.simplyti.cloud.kube.client.domain.SecretList;
 import com.simplyti.cloud.kube.client.domain.Service;
 import com.simplyti.cloud.kube.client.domain.ServiceAccount;
 import com.simplyti.cloud.kube.client.domain.ServiceList;
+import com.simplyti.cloud.kube.client.domain.ServicePort;
 import com.simplyti.cloud.kube.client.observe.Observable;
 import com.simplyti.cloud.kube.client.reqs.CreateDeploymentRequest;
 import com.simplyti.cloud.kube.client.reqs.CreateEndpointRequest;
@@ -28,6 +29,7 @@ import com.simplyti.cloud.kube.client.reqs.CreateNamespaceRequest;
 import com.simplyti.cloud.kube.client.reqs.CreatePodRequest;
 import com.simplyti.cloud.kube.client.reqs.CreateServiceRequest;
 import com.simplyti.cloud.kube.client.reqs.DeleteNamespaceRequest;
+import com.simplyti.cloud.kube.client.reqs.DeleteServiceRequest;
 import com.simplyti.cloud.kube.client.reqs.GetEndpointEventsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetEndpointRequest;
 import com.simplyti.cloud.kube.client.reqs.GetHealthRequest;
@@ -41,6 +43,7 @@ import com.simplyti.cloud.kube.client.reqs.GetServiceEventsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetServicesRequest;
 import com.simplyti.cloud.kube.client.reqs.KubernetesApiRequest;
 import com.simplyti.cloud.kube.client.reqs.KubernetesCommandExec;
+import com.simplyti.cloud.kube.client.reqs.UpdateServiceRequest;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -94,13 +97,26 @@ public class KubeClient {
 	public Future<ServiceList> getServices() {
 		return sendRequest(new GetServicesRequest());
 	}
+	
+	public Future<ServiceList> getServices(String namespace) {
+		return sendRequest(new GetServicesRequest(namespace));
+	}
 
 	public Future<EndpointList> getEndpoints() {
 		return sendRequest(new GetEndpointRequest());
 	}
 
-	public Future<Service> createService(String namespace, String name, Collection<Integer> ports,Map<String, String> labelSelector) {
+	
+	public Future<Service> createService(String namespace, String name, Collection<ServicePort> ports,Map<String, String> labelSelector) {
 		return sendRequest(new CreateServiceRequest(namespace,name,ports,labelSelector));
+	}
+	
+	public Future<Service> updateService(Service service) {
+		return sendRequest(new UpdateServiceRequest(service));
+	}
+	
+	public Future<Void> deleteService(String namespace, String name) {
+		return sendRequest(new DeleteServiceRequest(namespace,name));
 	}
 	
 	public Future<Deployment> createDeployment(String namespace, String name, String image, Map<String, String> labels,Collection<String> command, Probe readinessProbe) {

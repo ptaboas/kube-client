@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.simplyti.cloud.kube.client.reqs.KubernetesApiRequest;
@@ -36,6 +37,7 @@ public class KubernetesApiRequestEncoder extends MessageToMessageEncoder<Kuberne
 	public KubernetesApiRequestEncoder(String remoteHost) {
 		this.remoteHost=remoteHost;
 		this.mapper = new ObjectMapper();
+		mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.registerModule(new JavaTimeModule());
 		mapper.registerModule(new ParameterNamesModule(JsonCreator.Mode.PROPERTIES));

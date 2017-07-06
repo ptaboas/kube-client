@@ -9,5 +9,9 @@ public class GetServicesRequest extends KubernetesApiRequest {
 	public GetServicesRequest() {
 		super(HttpMethod.GET, "/api/v1/services",null,ServiceList.class);
 	}
+	
+	public GetServicesRequest(String namespace) {
+		super(HttpMethod.GET, "/api/v1/namespaces/"+namespace+"/services",null,ServiceList.class);
+	}
 
 }

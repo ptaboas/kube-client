@@ -11,7 +11,7 @@ import lombok.Getter;
 public class ServiceSpec {
 	
 	private final String clusterIP;
-	private final List<Port> ports;
+	private final List<ServicePort> ports;
 	private final Map<String,String> selector;
 	
 
