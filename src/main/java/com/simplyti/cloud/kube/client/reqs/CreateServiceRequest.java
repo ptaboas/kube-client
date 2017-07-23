@@ -34,6 +34,10 @@ public class CreateServiceRequest extends KubernetesApiRequest {
 	private static Map<String,Object> port(ServicePort port) {
 		ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
 				.put("port", port.getPort());
+		
+		if(port.getName()!=null){
+			builder.put("name",port.getName());
+		}
 				
 		if(port.getTargetPort()!=null){
 			builder.put("targetPort",port.getTargetPort());

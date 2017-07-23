@@ -11,6 +11,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.EventType;
 import com.simplyti.cloud.kube.client.domain.Metadata;
@@ -72,7 +74,25 @@ public class ServicesIT {
 		assertTrue(result.isSuccess());
 		
 		Future<ServiceList> services = client.getServices().await();
-		assertThat(services.getNow().getItems(),hasItem(hasProperty("metadata",allOf(hasProperty("namespace",equalTo("test")),hasProperty("name",equalTo("nginx"))))));
+		assertThat(services.getNow().getItems(),hasItem(
+				hasProperty("metadata",allOf(
+						hasProperty("namespace",equalTo("test")),
+						hasProperty("name",equalTo("nginx"))))));
+	}
+	
+	@Test
+	public void createServiceWithMultiplePorts() throws InterruptedException{
+		Future<Service> result = client.createService("test","nginx",ImmutableSet.of(ServicePort.port(80,"http"),ServicePort.port(443,"https")),Collections.singletonMap("app", "nginx")).await();
+		assertTrue(result.isSuccess());
+		
+		Future<ServiceList> services = client.getServices().await();
+		assertThat(services.getNow().getItems(),hasItem(
+				hasProperty("metadata",allOf(
+						hasProperty("namespace",equalTo("test")),
+						hasProperty("name",equalTo("nginx"))))));
+		
+		Service service = Iterables.find(services.getNow().getItems(), item->item.getMetadata().getName().equals("nginx"));
+		assertThat(service.getSpec().getPorts(),hasSize(2));
 	}
 	
 	@Test
