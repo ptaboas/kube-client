@@ -16,6 +16,7 @@ import com.google.common.collect.Iterables;
 import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.EventType;
 import com.simplyti.cloud.kube.client.domain.Metadata;
+import com.simplyti.cloud.kube.client.domain.Protocol;
 import com.simplyti.cloud.kube.client.domain.Service;
 import com.simplyti.cloud.kube.client.domain.ServiceList;
 import com.simplyti.cloud.kube.client.domain.ServicePort;
@@ -82,7 +83,7 @@ public class ServicesIT {
 	
 	@Test
 	public void createServiceWithMultiplePorts() throws InterruptedException{
-		Future<Service> result = client.createService("test","nginx",ImmutableSet.of(ServicePort.port(80,"http"),ServicePort.port(443,"https")),Collections.singletonMap("app", "nginx")).await();
+		Future<Service> result = client.createService("test","nginx",ImmutableSet.of(ServicePort.port(80,"tcp"),ServicePort.port(80,"udp",Protocol.UDP)),Collections.singletonMap("app", "nginx")).await();
 		assertTrue(result.isSuccess());
 		
 		Future<ServiceList> services = client.getServices().await();

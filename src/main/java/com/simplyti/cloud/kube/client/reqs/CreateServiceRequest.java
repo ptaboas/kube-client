@@ -38,6 +38,10 @@ public class CreateServiceRequest extends KubernetesApiRequest {
 		if(port.getName()!=null){
 			builder.put("name",port.getName());
 		}
+		
+		if(port.getProtocol()!=null){
+			builder.put("protocol",port.getProtocol());
+		}
 				
 		if(port.getTargetPort()!=null){
 			builder.put("targetPort",port.getTargetPort());
