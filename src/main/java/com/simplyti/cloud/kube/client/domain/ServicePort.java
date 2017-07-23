@@ -9,7 +9,7 @@ public class ServicePort {
 	
 	private final String name;
 	private final Integer port;
-	private final Protocol protocol;
+	private final ServiceProtocol protocol;
 	private final Object targetPort;
 	
 	
@@ -21,7 +21,7 @@ public class ServicePort {
 		return new ServicePort(name, port, null, null);
 	}
 	
-	public static ServicePort port(int port,String name,Protocol protocol) {
+	public static ServicePort port(int port,String name,ServiceProtocol protocol) {
 		return new ServicePort(name, port, protocol, null);
 	}
 

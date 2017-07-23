@@ -1,6 +1,6 @@
 package com.simplyti.cloud.kube.client.domain;
 
-public enum Protocol {
+public enum ServiceProtocol {
 	
 	TCP,UDP;
 
