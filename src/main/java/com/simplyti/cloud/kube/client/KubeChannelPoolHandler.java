@@ -1,6 +1,8 @@
 package com.simplyti.cloud.kube.client;
 
 
+import java.util.function.Supplier;
+
 import com.simplyti.cloud.kube.client.coder.KubeApiEventChunkDecoder;
 import com.simplyti.cloud.kube.client.coder.KubernetesApiRequestEncoder;
 import com.simplyti.cloud.kube.client.coder.KubernetesApiResponseHandler;
@@ -18,6 +20,7 @@ import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.handler.codec.http.HttpResponseDecoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslContext;
 
 public class KubeChannelPoolHandler extends AbstractChannelPoolHandler {
 	
@@ -31,33 +34,34 @@ public class KubeChannelPoolHandler extends AbstractChannelPoolHandler {
 	private final KubernetesHttpAuthenticator kubernetesHttpAuthenticator;
 	
 	private final boolean verbose;
-	private final SecurityOptions securityOptions;
+	private final Supplier<SslContext> sslContextProvider;
 	
-	public KubeChannelPoolHandler(String remoteHost, boolean verbose,SecurityOptions securityOptions){
+	public KubeChannelPoolHandler(String remoteHost, boolean verbose, Supplier<SslContext> sslContextProvider,
+			Supplier<String> tokenProvider){
 		KubeObjectMapper mapper = new KubeObjectMapper();
 		kubernetesApiRequestEncoder = new KubernetesApiRequestEncoder(remoteHost,mapper);
 		kubernetesCommandExecEncoder = new KubernetesCommandExecEncoder(remoteHost);
 		kubernetesApiResponseHandler = new KubernetesApiResponseHandler(mapper);
 		kubernetesCommandExecResponseHandler = new KubernetesCommandExecResponseHandler(verbose);
 		kubeApiEventChunkDecoder = new KubeApiEventChunkDecoder();
-		kubernetesHttpAuthenticator = new KubernetesHttpAuthenticator(securityOptions);
+		this.sslContextProvider=sslContextProvider;
+		kubernetesHttpAuthenticator = new KubernetesHttpAuthenticator(tokenProvider);
 		this.verbose=verbose;
-		this.securityOptions=securityOptions;
+		
 	}
 
 	@Override
 	public void channelCreated(Channel ch) throws Exception {
-		if(securityOptions.isSsl()){
-			ch.pipeline().addLast(securityOptions.getSslCtx().newHandler(ch.alloc()));
+		SslContext sslContext = sslContextProvider.get();
+		if(sslContext!=null){
+			ch.pipeline().addLast(sslContext.newHandler(ch.alloc()));
 		}
 		
 		if(verbose){
 			ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
 		}
 		ch.pipeline().addLast(new HttpRequestEncoder());
-		if(securityOptions.isSsl()){
-			ch.pipeline().addLast(kubernetesHttpAuthenticator);
-		}
+		ch.pipeline().addLast(kubernetesHttpAuthenticator);
 		ch.pipeline().addLast(new HttpResponseDecoder());
 		ch.pipeline().addLast(kubeApiEventChunkDecoder);
 		ch.pipeline().addLast(new DelimiterBasedFrameDecoder(1000000,Delimiters.lineDelimiter()));

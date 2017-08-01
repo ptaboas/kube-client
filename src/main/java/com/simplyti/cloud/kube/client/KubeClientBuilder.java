@@ -1,25 +1,42 @@
 package com.simplyti.cloud.kube.client;
 
-import java.io.InputStream;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.google.common.base.MoreObjects;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import io.netty.channel.EventLoopGroup;
 
 public class KubeClientBuilder {
 	
-	private Address serverAddress;
-	private boolean verbose;
-	private SecurityOptions securityOptions;
-	private EventLoopGroup eventLoop;
+	private static final Pattern URL = Pattern.compile("(http|https)?(://)?([^:]+):?(\\d+)?");
+
+	private static final String UNSECURE_SCHEMA = "http";
+	private static final Integer DEFAULT_UNSECURE_PORT = 8080;
+	private static final String SECURE_SCHEMA = "https";
+	private static final Integer DEFAULT_SECURE_PORT = 443;
 	
-	public KubeClientBuilder server(String host, int port) {
+	private Address serverAddress;
+	private String caFile;
+	private String tokenFile;
+	private boolean verbose;
+	private EventLoopGroup eventLoop;
+
+	public KubeClientBuilder server(String url) {
+		Matcher matcher = URL.matcher(url);
+		checkArgument(matcher.matches());
+		String schema = Optional.ofNullable(matcher.group(1)).orElse(UNSECURE_SCHEMA);
+		boolean secured = schema.equals(SECURE_SCHEMA);
+		String host = matcher.group(3);
+		Integer port = Optional.ofNullable(matcher.group(4)).map(Integer::parseInt)
+				.orElse(secured?DEFAULT_SECURE_PORT:DEFAULT_UNSECURE_PORT);
 		this.serverAddress = new Address(host,port);
 		return this;
 	}
 	
 	public  KubeClient build() {
-		return new  KubeClient(eventLoop,serverAddress,verbose,MoreObjects.firstNonNull(securityOptions, SecurityOptions.NONE));
+		return new  KubeClient(eventLoop,serverAddress,verbose,new SslContextProvider(caFile),new TokenProvider(tokenFile));
 	}
 
 	public KubeClientBuilder verbose(boolean verbose) {
@@ -32,8 +49,13 @@ public class KubeClientBuilder {
 		return this;
 	}
 
-	public KubeClientBuilder secure(InputStream caCertificate, String token) {
-		this.securityOptions = new SecurityOptions(true, caCertificate, token);
+	public KubeClientBuilder caFile(String caFile) {
+		this.caFile=caFile;
+		return this;
+	}
+	
+	public KubeClientBuilder tokenFile(String tokenFile) {
+		this.tokenFile=tokenFile;
 		return this;
 	}
 

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.google.common.base.Joiner;
 import com.simplyti.cloud.kube.client.domain.Endpoint;
@@ -55,6 +56,7 @@ import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.pool.SimpleChannelPool;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.ssl.SslContext;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
@@ -76,7 +78,8 @@ public class KubeClient {
 	private final SimpleChannelPool pool;
 	private final EventLoopGroup eventLoopGroup;
 	
-	public KubeClient(EventLoopGroup eventLoopGroup, Address server,boolean verbose, SecurityOptions securityOptions){
+	public KubeClient(EventLoopGroup eventLoopGroup, Address server,boolean verbose, Supplier<SslContext> sslContextProvider,
+			Supplier<String> tokenProvider){
 		InternalLoggerFactory.setDefaultFactory(Log4J2LoggerFactory.INSTANCE);
 		this.eventLoopGroup=eventLoopGroup;
 		 Bootstrap b = new Bootstrap().group(eventLoopGroup)
@@ -85,7 +88,7 @@ public class KubeClient {
 				.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
 				.remoteAddress(server.getHost(),server.getPort());
 		 
-		this.pool = new SimpleChannelPool(b, new KubeChannelPoolHandler(Joiner.on(":").join(server.getHost(),server.getPort()),verbose,securityOptions));
+		this.pool = new SimpleChannelPool(b, new KubeChannelPoolHandler(Joiner.on(":").join(server.getHost(),server.getPort()),verbose,sslContextProvider,tokenProvider));
 	}
 	
 	private Class<? extends Channel> channelClass() {
@@ -238,6 +241,10 @@ public class KubeClient {
 			 channel.writeAndFlush(new KubernetesCommandExec(namespace,name,command));
 		});
 		return promise;
+	}
+
+	public void close() {
+		eventLoopGroup.shutdownGracefully();
 	}
 
 }

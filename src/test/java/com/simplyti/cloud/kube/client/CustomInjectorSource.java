@@ -26,7 +26,7 @@ public class CustomInjectorSource extends AbstractModule implements InjectorSour
 	protected void configure() {
 		KubeClient client = KubeClient.builder()
 				.eventLoop(new NioEventLoopGroup())
-				.server("localhost", 8080)
+				.server("http://localhost:8080")
 				.verbose(true)
 			.build();
 		
