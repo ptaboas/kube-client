@@ -2,52 +2,41 @@ package com.simplyti.cloud.kube.client.reqs;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import com.google.common.collect.ImmutableMap;
+import com.simplyti.cloud.kube.client.domain.Metadata;
 import com.simplyti.cloud.kube.client.domain.Service;
 import com.simplyti.cloud.kube.client.domain.ServicePort;
+import com.simplyti.cloud.kube.client.domain.ServiceSpec;
 
 import io.netty.handler.codec.http.HttpMethod;
 
 public class CreateServiceRequest extends KubernetesApiRequest {
+	
+	public CreateServiceRequest(String namespace, String name, Collection<ServicePort> ports, Map<String, String> selector, Map<String, String> annotations) {
+		super(HttpMethod.POST, "/api/v1/namespaces/"+namespace+"/services",serviceResource(namespace,name,ports,selector,annotations),Service.class);
+	}
+
 
 	public CreateServiceRequest(String namespace, String name, Collection<ServicePort> ports, Map<String, String> selector) {
-		super(HttpMethod.POST, "/api/v1/namespaces/"+namespace+"/services",serviceResource(namespace,name,ports,selector),Service.class);
+		super(HttpMethod.POST, "/api/v1/namespaces/"+namespace+"/services",serviceResource(namespace,name,ports,selector,null),Service.class);
 	}
-
-	private static Object serviceResource(String namespace, String name, Collection<ServicePort> ports,
-			Map<String, String> selector) {
-		return ImmutableMap.builder()
-			.put("kind", "Service")
-			.put("apiVersion", "v1")
-			.put("metadata", ImmutableMap.builder()
-					.put("name", name)
-					.build())
-			.put("spec", ImmutableMap.builder()
-					.put("ports", ports.stream().map(port->port(port)).collect(Collectors.toSet()))
-					.put("selector", selector)
-					.build())
-			.build();
+	
+	public CreateServiceRequest(String namespace, String name, Collection<ServicePort> ports) {
+		super(HttpMethod.POST, "/api/v1/namespaces/"+namespace+"/services",serviceResource(namespace,name,ports,null,null),Service.class);
 	}
-
-	private static Map<String,Object> port(ServicePort port) {
-		ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
-				.put("port", port.getPort());
-		
-		if(port.getName()!=null){
-			builder.put("name",port.getName());
-		}
-		
-		if(port.getProtocol()!=null){
-			builder.put("protocol",port.getProtocol());
-		}
-				
-		if(port.getTargetPort()!=null){
-			builder.put("targetPort",port.getTargetPort());
-		}
-		
-		return builder.build();
+	
+	private static Service serviceResource(String namespace, String name, Collection<ServicePort> ports,
+			Map<String, String> selector, Map<String, String> annotations) {
+		return new Service(Service.KIND, Service.API, 
+				Metadata.builder()
+				.name(name)
+				.namespace(namespace)
+				.annotations(annotations)
+				.build(), 
+				ServiceSpec.builder()
+				.ports(ports)
+				.selector(selector)
+				.build());
 	}
 
 }

@@ -43,16 +43,16 @@ public class KubernetesCommandExecResponseHandler extends SimpleChannelInboundHa
 			ctx.pipeline().addLast(new SpdyHandler());
 			
 			DefaultSpdySynStreamFrame errStream = new DefaultSpdySynStreamFrame(1, 0, (byte)0x00);
-			errStream.headers().add("streamtype", "stderr");
+			errStream.headers().add("streamtype", "stdin");
 			ctx.pipeline().writeAndFlush(errStream);
 			
-			DefaultSpdySynStreamFrame inStream = new DefaultSpdySynStreamFrame(3, 0, (byte)0x00);
-			inStream.headers().add("streamtype", "stdin");
-			ctx.pipeline().writeAndFlush(inStream);
-			
-			DefaultSpdySynStreamFrame outStream = new DefaultSpdySynStreamFrame(5, 0, (byte)0x00);
+			DefaultSpdySynStreamFrame outStream = new DefaultSpdySynStreamFrame(3, 0, (byte)0x00);
 			outStream.headers().add("streamtype", "stdout");
 			ctx.pipeline().writeAndFlush(outStream);
+			
+			DefaultSpdySynStreamFrame inStream = new DefaultSpdySynStreamFrame(5, 0, (byte)0x00);
+			inStream.headers().add("streamtype", "stderr");
+			ctx.pipeline().writeAndFlush(inStream);
 		}else{
 			ctx.fireChannelRead(ReferenceCountUtil.retain(msg));
 		}

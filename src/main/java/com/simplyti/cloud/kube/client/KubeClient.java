@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.google.common.base.Joiner;
-import com.simplyti.cloud.kube.client.domain.Deployment;
 import com.simplyti.cloud.kube.client.domain.Endpoint;
 import com.simplyti.cloud.kube.client.domain.EndpointList;
 import com.simplyti.cloud.kube.client.domain.KubernetesResource;
@@ -23,12 +22,14 @@ import com.simplyti.cloud.kube.client.domain.ServiceAccount;
 import com.simplyti.cloud.kube.client.domain.ServiceList;
 import com.simplyti.cloud.kube.client.domain.ServicePort;
 import com.simplyti.cloud.kube.client.observe.Observable;
-import com.simplyti.cloud.kube.client.reqs.CreateDeploymentRequest;
 import com.simplyti.cloud.kube.client.reqs.CreateEndpointRequest;
 import com.simplyti.cloud.kube.client.reqs.CreateNamespaceRequest;
 import com.simplyti.cloud.kube.client.reqs.CreatePodRequest;
+import com.simplyti.cloud.kube.client.reqs.CreateSecretRequest;
 import com.simplyti.cloud.kube.client.reqs.CreateServiceRequest;
+import com.simplyti.cloud.kube.client.reqs.DeleteEndpointRequest;
 import com.simplyti.cloud.kube.client.reqs.DeleteNamespaceRequest;
+import com.simplyti.cloud.kube.client.reqs.DeletePodRequest;
 import com.simplyti.cloud.kube.client.reqs.DeleteServiceRequest;
 import com.simplyti.cloud.kube.client.reqs.GetEndpointEventsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetEndpointRequest;
@@ -40,6 +41,7 @@ import com.simplyti.cloud.kube.client.reqs.GetSecretRequest;
 import com.simplyti.cloud.kube.client.reqs.GetSecretsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetServiceAccount;
 import com.simplyti.cloud.kube.client.reqs.GetServiceEventsRequest;
+import com.simplyti.cloud.kube.client.reqs.GetServiceRequest;
 import com.simplyti.cloud.kube.client.reqs.GetServicesRequest;
 import com.simplyti.cloud.kube.client.reqs.KubernetesApiRequest;
 import com.simplyti.cloud.kube.client.reqs.KubernetesCommandExec;
@@ -101,14 +103,25 @@ public class KubeClient {
 	public Future<ServiceList> getServices(String namespace) {
 		return sendRequest(new GetServicesRequest(namespace));
 	}
+	
+	public Future<Service> getservice(String namespace, String name) {
+		return sendRequest(new GetServiceRequest(namespace,name));
+	}
 
 	public Future<EndpointList> getEndpoints() {
 		return sendRequest(new GetEndpointRequest());
 	}
 
+	public Future<Service> createService(String namespace, String name, Collection<ServicePort> ports) {
+		return createService(namespace,name,ports,null);
+	}
 	
 	public Future<Service> createService(String namespace, String name, Collection<ServicePort> ports,Map<String, String> labelSelector) {
-		return sendRequest(new CreateServiceRequest(namespace,name,ports,labelSelector));
+		return createService(namespace,name,ports,labelSelector,null);
+	}
+	
+	public Future<Service> createService(String namespace, String name, Collection<ServicePort> ports,Map<String, String> labelSelector,Map<String, String> annotations) {
+		return sendRequest(new CreateServiceRequest(namespace,name,ports,labelSelector,annotations));
 	}
 	
 	public Future<Service> updateService(Service service) {
@@ -119,32 +132,33 @@ public class KubeClient {
 		return sendRequest(new DeleteServiceRequest(namespace,name));
 	}
 	
-	public Future<Deployment> createDeployment(String namespace, String name, String image, Map<String, String> labels,Collection<String> command, Probe readinessProbe) {
-		return sendRequest(new CreateDeploymentRequest(namespace,name,image,labels,command,readinessProbe));
+	public Future<Pod> createPod(String namespace, String name, String image, Boolean mountServiceAccount) {
+		return createPod(namespace,name,image,null,null,null,mountServiceAccount);
 	}
 	
-	public Future<Deployment> createDeployment(String namespace, String name, String image, Map<String, String> labels, Probe readinessProbe) {
-		return createDeployment(namespace, name, image, labels, null, readinessProbe);
-	}
-	
-	public Future<Deployment> createDeployment(String namespace, String name, String image, Map<String, String> labels) {
-		return createDeployment(namespace, name, image, labels, null);
+	public Future<Pod> createPod(String namespace, String name, String image, Probe readinessProbe, Boolean mountServiceAccount) {
+		return createPod(namespace,name,image,null,null,readinessProbe,mountServiceAccount);
 	}
 	
 	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels) {
-		return createPod(namespace,name,image,labels,null,null);
+		return createPod(namespace,name,image,labels,null,null,null);
 	}
 	
 	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Collection<String> command) {
-		return createPod(namespace,name,image,labels,command,null);
-	}
-	
-	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Collection<String> command, Probe readinessProbe) {
-		return sendRequest(new CreatePodRequest(namespace,name,image,labels,command,readinessProbe));
+		return createPod(namespace,name,image,labels,command,null,null);
 	}
 	
 	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Probe readinessProbe) {
-		return createPod(namespace,name,image,labels,null,readinessProbe);
+		return createPod(namespace,name,image,labels,null,readinessProbe,null);
+	}
+	
+	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Collection<String> command, Probe readinessProbe,
+			Boolean mountServiceAccount) {
+		return sendRequest(new CreatePodRequest(namespace,name,image,labels,command,readinessProbe,mountServiceAccount));
+	}
+	
+	public Future<Void> deletePod(String namespace, String name) {
+		return sendRequest(new DeletePodRequest(namespace,name));
 	}
 	
 	public Future<Pod> getPod(String namespace, String name) {
@@ -179,8 +193,16 @@ public class KubeClient {
 		return sendRequest(new GetServiceAccount(namespace,name));
 	}
 	
+	public Future<Void> deleteEndpoint(String namespace, String name) {
+		return sendRequest(new DeleteEndpointRequest(namespace,name));
+	}
+	
 	public Future<Endpoint> createEndpoint(String namespace, String name, Set<String> addresses, Set<Integer> ports) {
 		return sendRequest(new CreateEndpointRequest(namespace,name,addresses,ports));
+	}
+	
+	public Future<Secret> createSecret(String namespace, String name, Map<String, String> data) {
+		return sendRequest(new CreateSecretRequest(namespace,name,data));
 	}
 
 	private <T> Future<T> sendRequest(KubernetesApiRequest apiRequest) {
@@ -195,15 +217,15 @@ public class KubeClient {
 	}
 	
 	public Observable<Service> observeServices(String index) {
-		return observeServices(index,newIndex->new GetServiceEventsRequest(index));
+		return observeServices(index,newIndex->new GetServiceEventsRequest(newIndex));
 	}
 	
 	public Observable<Endpoint> observeEndpoints(String index) {
-		return observeServices(index,newIndex->new GetEndpointEventsRequest(index));
+		return observeServices(index,newIndex->new GetEndpointEventsRequest(newIndex));
 	}
 	
 	public Observable<Endpoint> observeEndpoints(String namespace, String index) {
-		return observeServices(index,newIndex->new GetEndpointEventsRequest(namespace,index));
+		return observeServices(index,newIndex->new GetEndpointEventsRequest(namespace,newIndex));
 	}
 	
 	public <T extends KubernetesResource> Observable<T> observeServices(String index,Function<String,KubernetesApiRequest> reqSupplier) {

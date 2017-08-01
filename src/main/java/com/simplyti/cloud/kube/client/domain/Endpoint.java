@@ -1,5 +1,6 @@
 package com.simplyti.cloud.kube.client.domain;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,7 +11,10 @@ import lombok.Getter;
 @Getter
 public class Endpoint extends KubernetesResource{
 	
-	private final List<Subset> subsets;
+	public static final String KIND = "Endpoints";
+	public static final String API = "v1";
+	
+	private final Collection<Subset> subsets;
 	
 	@JsonCreator
 	public Endpoint(

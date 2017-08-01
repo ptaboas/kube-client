@@ -2,13 +2,10 @@ package com.simplyti.cloud.kube.client.coder;
 
 import java.io.InputStream;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.simplyti.cloud.kube.client.KubeClient;
 import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.KubernetesResource;
+import com.simplyti.cloud.kube.client.mapper.KubeObjectMapper;
 import com.simplyti.cloud.kube.client.observe.Observable;
 
 import io.netty.buffer.ByteBuf;
@@ -17,22 +14,18 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.Promise;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-
 @Sharable
 public class KubernetesApiResponseHandler extends SimpleChannelInboundHandler<Object> {
 	
-	private final ObjectMapper mapper;
+	private final KubeObjectMapper mapper;
 	
-	public KubernetesApiResponseHandler() {
-		this.mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		mapper.registerModule(new JavaTimeModule());
-		mapper.registerModule(new ParameterNamesModule(JsonCreator.Mode.PROPERTIES));
+	public KubernetesApiResponseHandler(KubeObjectMapper mapper) {
+		this.mapper=mapper;
 	}
 
 	@Override
@@ -55,8 +48,15 @@ public class KubernetesApiResponseHandler extends SimpleChannelInboundHandler<Ob
 			if(responseclass.equals(String.class)){
 				future.setSuccess(content.readSlice(content.readableBytes()).toString(CharsetUtil.UTF_8));
 			}else{
-				Object response = mapper.readValue((InputStream)new ByteBufInputStream(content), responseclass);
-				future.setSuccess(response);
+				if(msg instanceof FullHttpResponse){
+					if(((FullHttpResponse) msg).status().equals(HttpResponseStatus.NOT_FOUND)){
+						future.setSuccess(null);
+					}else{
+						future.setSuccess(mapper.readValue((InputStream)new ByteBufInputStream(content), responseclass));
+					}
+				}else{
+					future.setSuccess(mapper.readValue((InputStream)new ByteBufInputStream(content), responseclass));
+				}
 			}
 		}
 	}

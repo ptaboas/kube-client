@@ -8,6 +8,9 @@ import lombok.Getter;
 
 public class Service extends KubernetesResource{
 	
+	public static final String KIND = "Service";
+	public static final String API = "v1";
+	
 	@Getter
 	private final ServiceSpec spec;
 

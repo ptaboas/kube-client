@@ -7,6 +7,7 @@ import com.simplyti.cloud.kube.client.coder.KubernetesApiResponseHandler;
 import com.simplyti.cloud.kube.client.coder.KubernetesCommandExecEncoder;
 import com.simplyti.cloud.kube.client.coder.KubernetesCommandExecResponseHandler;
 import com.simplyti.cloud.kube.client.coder.KubernetesHttpAuthenticator;
+import com.simplyti.cloud.kube.client.mapper.KubeObjectMapper;
 
 import io.netty.channel.Channel;
 import io.netty.channel.pool.AbstractChannelPoolHandler;
@@ -33,9 +34,10 @@ public class KubeChannelPoolHandler extends AbstractChannelPoolHandler {
 	private final SecurityOptions securityOptions;
 	
 	public KubeChannelPoolHandler(String remoteHost, boolean verbose,SecurityOptions securityOptions){
-		kubernetesApiRequestEncoder = new KubernetesApiRequestEncoder(remoteHost);
+		KubeObjectMapper mapper = new KubeObjectMapper();
+		kubernetesApiRequestEncoder = new KubernetesApiRequestEncoder(remoteHost,mapper);
 		kubernetesCommandExecEncoder = new KubernetesCommandExecEncoder(remoteHost);
-		kubernetesApiResponseHandler = new KubernetesApiResponseHandler();
+		kubernetesApiResponseHandler = new KubernetesApiResponseHandler(mapper);
 		kubernetesCommandExecResponseHandler = new KubernetesCommandExecResponseHandler(verbose);
 		kubeApiEventChunkDecoder = new KubeApiEventChunkDecoder();
 		kubernetesHttpAuthenticator = new KubernetesHttpAuthenticator(securityOptions);
