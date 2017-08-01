@@ -36,6 +36,7 @@ import com.simplyti.cloud.kube.client.domain.KubernetesResource;
 import com.simplyti.cloud.kube.client.domain.Metadata;
 import com.simplyti.cloud.kube.client.domain.Namespace;
 import com.simplyti.cloud.kube.client.domain.Service;
+import com.simplyti.cloud.kube.client.domain.ServiceList;
 import com.simplyti.cloud.kube.client.domain.ServicePort;
 import com.simplyti.cloud.kube.client.domain.ServiceProtocol;
 import com.simplyti.cloud.kube.client.domain.ServiceSpec;
@@ -144,7 +145,7 @@ public class ServicesStepDefinitions {
 			.toArray(size -> new Matcher[size]);
 	}
 	
-	@Then("^I check that service \"([^\"]*)\" does not have salector$")
+	@Then("^I check that service \"([^\"]*)\" does not have selector$")
 	public void iCheckThatServiceDoesNotHaveSalector(String key) throws Throwable {
 		Service service = (Service) scenarioData.get(key);
 		assertThat(service.getSpec().getSelector(),nullValue());
@@ -239,6 +240,21 @@ public class ServicesStepDefinitions {
 	public void iClearEventList(String key) throws Throwable {
 		Set<?> events = (Set<?>) scenarioData.get(key);
 		events.clear();
+	}
+	
+	@When("^I retrieve all services \"([^\"]*)\" in namespace \"([^\"]*)\"$")
+	public void iRetrieveAllServicesInNamespace(String key, String namespace) throws Throwable {
+		Future<ServiceList> result = client.getServices(namespace).await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
+		scenarioData.put(key, result.getNow());
+	}
+
+	@Then("^I check that services \"([^\"]*)\" contains the service \"([^\"]*)\"$")
+	public void iCheckThatServicesContainsTheService(String servicesKey, String serviceKey) throws Throwable {
+		Service service = (Service) scenarioData.get(serviceKey);
+		ServiceList services = (ServiceList) scenarioData.get(servicesKey);
+		assertThat(services.getItems(),contains(hasProperty("metadata",hasProperty("name",equalTo(service.getMetadata().getName())))));
 	}
 	
 }

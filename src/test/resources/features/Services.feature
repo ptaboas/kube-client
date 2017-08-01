@@ -7,7 +7,9 @@ Scenario: Create simple service
 	And I check that service "#service" has next ports:
 	  | port |
 	  | 80   |
-	And I check that service "#service" does not have salector
+	And I check that service "#service" does not have selector
+	When I retrieve all services "#services" in namespace "acceptance"
+	Then I check that services "#services" contains the service "#service"
 	
 Scenario: Create simple service with selectors
 	Given a namespace "acceptance"

@@ -9,6 +9,4 @@ public class ContainerStatus {
 	
 	private final Boolean ready;
 	
-	private final ContainerState state;
-	
 }

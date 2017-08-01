@@ -140,18 +140,6 @@ public class KubeClient {
 		return createPod(namespace,name,image,null,null,readinessProbe,mountServiceAccount);
 	}
 	
-	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels) {
-		return createPod(namespace,name,image,labels,null,null,null);
-	}
-	
-	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Collection<String> command) {
-		return createPod(namespace,name,image,labels,command,null,null);
-	}
-	
-	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Probe readinessProbe) {
-		return createPod(namespace,name,image,labels,null,readinessProbe,null);
-	}
-	
 	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Collection<String> command, Probe readinessProbe,
 			Boolean mountServiceAccount) {
 		return sendRequest(new CreatePodRequest(namespace,name,image,labels,command,readinessProbe,mountServiceAccount));
@@ -222,10 +210,6 @@ public class KubeClient {
 	
 	public Observable<Endpoint> observeEndpoints(String index) {
 		return observeServices(index,newIndex->new GetEndpointEventsRequest(newIndex));
-	}
-	
-	public Observable<Endpoint> observeEndpoints(String namespace, String index) {
-		return observeServices(index,newIndex->new GetEndpointEventsRequest(namespace,newIndex));
 	}
 	
 	public <T extends KubernetesResource> Observable<T> observeServices(String index,Function<String,KubernetesApiRequest> reqSupplier) {

@@ -16,15 +16,6 @@ public class CreateServiceRequest extends KubernetesApiRequest {
 		super(HttpMethod.POST, "/api/v1/namespaces/"+namespace+"/services",serviceResource(namespace,name,ports,selector,annotations),Service.class);
 	}
 
-
-	public CreateServiceRequest(String namespace, String name, Collection<ServicePort> ports, Map<String, String> selector) {
-		super(HttpMethod.POST, "/api/v1/namespaces/"+namespace+"/services",serviceResource(namespace,name,ports,selector,null),Service.class);
-	}
-	
-	public CreateServiceRequest(String namespace, String name, Collection<ServicePort> ports) {
-		super(HttpMethod.POST, "/api/v1/namespaces/"+namespace+"/services",serviceResource(namespace,name,ports,null,null),Service.class);
-	}
-	
 	private static Service serviceResource(String namespace, String name, Collection<ServicePort> ports,
 			Map<String, String> selector, Map<String, String> annotations) {
 		return new Service(Service.KIND, Service.API, 
