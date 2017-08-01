@@ -101,12 +101,20 @@ public class PodsStepDefinitions {
 		scenarioData.put(result, iExecuteNextCommandInPod(command, key));
 	}
 	
+	@When("^I try to execute next command \"([^\"]*)\" in pod \"([^\"]*)\" getting result \"([^\"]*)\"$")
+	public void iTryToExecuteNextCommandInPodGettingResult(String command, String key, String resultKey) throws Throwable {
+		Pod pod = (Pod) scenarioData.get(key);
+		Future<byte[]> result = client.executeCommand(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), command).await();
+		scenarioData.put(resultKey, result);
+	}
+	
 	@Then("^I check command result \"([^\"]*)\" contains value \"([^\"]*)\"$")
 	public void iCheckCommandResultContainsValue(String key, String expected) throws Throwable {
 		byte[] data = (byte[]) scenarioData.get(key);
 		String strData = new String(data, "UTF-8").trim();
 		assertThat(strData,equalTo(expected));
 	}
+	
 	
 	@Then("^I delete pod \"([^\"]*)\"$")
 	public void iDeletePod(String key) throws Throwable {

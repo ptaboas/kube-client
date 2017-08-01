@@ -29,3 +29,13 @@ Scenario: Execute pod command
 	Then I check command result "#result" contains value "test" 
 	When I execute next command "touch /tmp/healthy" in pod "#pod"
 	Then I check that pod "#pod" is ready
+	
+Scenario: Execute pod command failure
+	Given a namespace "acceptance"
+	When I create a pod in namespace "acceptance" with name "test", image "nginx" and readiness probe "cat /tmp/healthy" 
+	Then I check that exist a pod "#pod" with name "test" in namespace "acceptance"
+	And I check that pod "#pod" has "RUNNING" state
+	And I check that pod "#pod" is not ready
+	When I try to execute next command "cat /etc/notfound" in pod "#pod" getting result "#result"
+	Then I check that result "#result" is failure
+	And I check that failure result "#result" contains message "Error executing command: cat: /etc/notfound: No such file or directory"

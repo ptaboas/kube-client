@@ -5,6 +5,7 @@ import java.io.InputStream;
 import com.simplyti.cloud.kube.client.KubeClient;
 import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.KubernetesResource;
+import com.simplyti.cloud.kube.client.exception.KubeClientErrorException;
 import com.simplyti.cloud.kube.client.mapper.KubeObjectMapper;
 import com.simplyti.cloud.kube.client.observe.Observable;
 
@@ -14,6 +15,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
@@ -48,11 +50,14 @@ public class KubernetesApiResponseHandler extends SimpleChannelInboundHandler<Ob
 			if(responseclass.equals(String.class)){
 				future.setSuccess(content.readSlice(content.readableBytes()).toString(CharsetUtil.UTF_8));
 			}else{
-				if(msg instanceof FullHttpResponse){
-					if(((FullHttpResponse) msg).status().equals(HttpResponseStatus.NOT_FOUND)){
+				if(msg instanceof HttpResponse){
+					HttpResponse httpResponse = (HttpResponse) msg;
+					if(httpResponse.status().equals(HttpResponseStatus.NOT_FOUND)){
 						future.setSuccess(null);
-					}else{
+					}else if (httpResponse.status().code()<300){
 						future.setSuccess(mapper.readValue((InputStream)new ByteBufInputStream(content), responseclass));
+					}else{
+						future.setFailure(new KubeClientErrorException(content.toString(CharsetUtil.UTF_8).trim(), httpResponse.status().code()));
 					}
 				}else{
 					future.setSuccess(mapper.readValue((InputStream)new ByteBufInputStream(content), responseclass));

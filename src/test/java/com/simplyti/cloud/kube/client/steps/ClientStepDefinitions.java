@@ -1,8 +1,10 @@
 package com.simplyti.cloud.kube.client.steps;
 
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -71,6 +73,25 @@ public class ClientStepDefinitions {
 		assertThat(result.getNow(),notNullValue());
 	}
 	
+	@When("^I try to retrieve service list \"([^\"]*)\" using client \"([^\"]*)\"$")
+	public void iTryToRetrieveServiceListUsingClient(String resultKey, String clientKey) throws Throwable {
+		KubeClient client = (KubeClient) scenarioData.get(clientKey);
+		Future<ServiceList> result = client.getServices().await();
+		scenarioData.put(resultKey, result);
+	}
+	
+	@Then("^I check that result \"([^\"]*)\" is failure$")
+	public void iCheckThatResultIsFailure(String key) throws Throwable {
+		Future<?> result = (Future<?>) scenarioData.get(key);
+		assertFalse(result.isSuccess());
+	}
+
+	@Then("^I check that failure result \"([^\"]*)\" contains message \"([^\"]*)\"$")
+	public void iCheckThatFailureResultContainsMessage(String key, String expected) throws Throwable {
+		Future<?> result = (Future<?>) scenarioData.get(key);
+		assertThat(result.cause().getMessage(),equalTo(expected));
+	}
+	
 	@Given("^exist a service account CA certificate in file \"([^\"]*)\"$")
 	public void existAServiceAccountCACertificateInFile(String file) throws Throwable {
 		ServiceAccount serviceAccount = client.getServiceAccount("default", "default").await().getNow();
@@ -85,6 +106,11 @@ public class ClientStepDefinitions {
 		String secretName = Iterables.getFirst(serviceAccount.getSecrets(), null).getName();
 		Secret secret = client.getSecret("default", secretName).await().getNow();
 		FileUtils.write(BUILD_DIR.resolve(file).toFile(), secret.getData().get("token"),CharsetUtil.UTF_8);
+	}
+	
+	@Given("^exist a service account token in file \"([^\"]*)\" with content \"([^\"]*)\"$")
+	public void existAServiceAccountTokenInFileWithContent(String file, String content) throws Throwable {
+		FileUtils.write(BUILD_DIR.resolve(file).toFile(), content, CharsetUtil.UTF_8);
 	}
 
 }
