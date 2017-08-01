@@ -7,7 +7,7 @@ import io.netty.handler.codec.http.HttpMethod;
 public class GetEndpointEventsRequest extends KubernetesApiRequest {
 	
 	public GetEndpointEventsRequest(String version) {
-		super(HttpMethod.GET, "/api/v1/endpoints?watch"+(version!=null?"&resourceVersion="+version:""),null,EndpointEvent.class);
+		super(HttpMethod.GET, "/api/v1/endpoints?watch&resourceVersion="+version,null,EndpointEvent.class);
 	}
 
 

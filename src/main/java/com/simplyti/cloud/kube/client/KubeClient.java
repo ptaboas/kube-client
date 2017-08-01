@@ -36,6 +36,7 @@ import com.simplyti.cloud.kube.client.reqs.GetEndpointEventsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetEndpointRequest;
 import com.simplyti.cloud.kube.client.reqs.GetHealthRequest;
 import com.simplyti.cloud.kube.client.reqs.GetNamespacesRequest;
+import com.simplyti.cloud.kube.client.reqs.GetPodEventsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetPodRequest;
 import com.simplyti.cloud.kube.client.reqs.GetPodsRequest;
 import com.simplyti.cloud.kube.client.reqs.GetSecretRequest;
@@ -159,6 +160,10 @@ public class KubeClient {
 	public Future<PodList> getpods(String namespace) {
 		return sendRequest(new GetPodsRequest(namespace));
 	}
+	
+	public Future<PodList> getPods() {
+		return sendRequest(new GetPodsRequest());
+	}
 
 	public Future<Namespace> createNamespace(String name) {
 		return sendRequest(new CreateNamespaceRequest(name));
@@ -213,6 +218,10 @@ public class KubeClient {
 	
 	public Observable<Endpoint> observeEndpoints(String index) {
 		return observeServices(index,newIndex->new GetEndpointEventsRequest(newIndex));
+	}
+	
+	public Observable<Pod> observePods(String index) {
+		return observeServices(index,newIndex->new GetPodEventsRequest(newIndex));
 	}
 	
 	public <T extends KubernetesResource> Observable<T> observeServices(String index,Function<String,KubernetesApiRequest> reqSupplier) {

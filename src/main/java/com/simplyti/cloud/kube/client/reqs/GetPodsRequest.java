@@ -9,5 +9,9 @@ public class GetPodsRequest extends KubernetesApiRequest {
 	public GetPodsRequest(String namespace) {
 		super(HttpMethod.GET, "/api/v1/namespaces/"+namespace+"/pods",null,PodList.class);
 	}
+	
+	public GetPodsRequest() {
+		super(HttpMethod.GET, "/api/v1/pods",null,PodList.class);
+	}
 
 }

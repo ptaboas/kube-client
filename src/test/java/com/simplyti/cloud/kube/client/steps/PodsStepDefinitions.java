@@ -9,7 +9,9 @@ import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -17,6 +19,7 @@ import javax.inject.Inject;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import com.simplyti.cloud.kube.client.KubeClient;
+import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.Pod;
 import com.simplyti.cloud.kube.client.domain.PodList;
 import com.simplyti.cloud.kube.client.domain.PodPhase;
@@ -144,6 +147,16 @@ public class PodsStepDefinitions {
 		PodList pods = (PodList) scenarioData.get(listKey);
 		Pod pod = (Pod) scenarioData.get(podKey);
 		assertThat(pods.getItems(),contains(hasProperty("metadata",hasProperty("name",equalTo(pod.getMetadata().getName())))));
+	}
+	
+	@When("^I observe pods storing events in \"([^\"]*)\"$")
+	public void iObservePodsStoringEventsIn(String key) throws Throwable {
+		String index = client.getPods().await().getNow().getMetadata().getResourceVersion();
+		Set<Event<Pod>> events = new HashSet<>();
+		client.observePods(index).onEvent(event->{
+			events.add(event);
+		});
+		scenarioData.put(key, events);
 	}
 
 }

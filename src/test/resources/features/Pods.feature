@@ -39,3 +39,12 @@ Scenario: Execute pod command failure
 	When I try to execute next command "cat /etc/notfound" in pod "#pod" getting result "#result"
 	Then I check that result "#result" is failure
 	And I check that failure result "#result" contains message "Error executing command: cat: /etc/notfound: No such file or directory"
+
+Scenario: Observe pods
+	Given a namespace "acceptance"
+	When I observe pods storing events in "#pods"
+	And I create a pod "#pod1" in namespace "acceptance" with name "test" and image "nginx"
+	Then I check that observed events "#pods" has the "ADDED" event of "#pod1"
+	When I clear event list "#pods"
+	And I delete pod "#pod1"
+	Then I check that observed events "#pods" has the "DELETED" event of "#pod1"

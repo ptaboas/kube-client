@@ -236,6 +236,22 @@ public class ServicesStepDefinitions {
 		assertThat(eventObject.getMetadata().getName(),equalTo(resource.getMetadata().getName()));
 	}
 	
+	@Then("^I check that observed events \"([^\"]*)\" has the \"([^\"]*)\" event of \"([^\"]*)\"$")
+	public void iCheckThatObservedEventsHasTheEventOf(String key, EventType type, String reosurceKey) throws Throwable {
+		@SuppressWarnings("unchecked")
+		Set<Event<KubernetesResource>> events = (Set<Event<KubernetesResource>>) scenarioData.get(key);
+		KubernetesResource resource = (KubernetesResource) scenarioData.get(reosurceKey);
+		
+		await().pollInterval(1, TimeUnit.SECONDS).atMost(30,TimeUnit.SECONDS)
+		.until(()->events.stream().filter(event->event.getObject().getMetadata().getNamespace().equals(resource.getMetadata().getNamespace())).collect(Collectors.toList()),
+				hasSize(greaterThanOrEqualTo(1)));
+		
+		List<Event<KubernetesResource>> filteredEvents = events.stream().filter(event->event.getObject().getMetadata().getNamespace().equals(resource.getMetadata().getNamespace())).collect(Collectors.toList());
+		assertThat(filteredEvents,hasItem(hasProperty("type",equalTo(type))));
+		KubernetesResource eventObject = filteredEvents.get(0).getObject();
+		assertThat(eventObject.getMetadata().getName(),equalTo(resource.getMetadata().getName()));
+	}
+	
 	@When("^I clear event list \"([^\"]*)\"$")
 	public void iClearEventList(String key) throws Throwable {
 		Set<?> events = (Set<?>) scenarioData.get(key);
