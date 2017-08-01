@@ -12,7 +12,7 @@ cache:
     - '$HOME/.m2/repository'
 
 script:
-- mvn verify
+- mvn verify && bash <(curl -s https://codecov.io/bash)
 
 deploy:
   -
