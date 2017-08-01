@@ -14,5 +14,9 @@ cache:
 script:
 - mvn verify
 
-after_success:
-- .travis/deploy.sh
+deploy:
+  -
+    provider: script
+    script: mvn --settings=./.travis/settings.xml jar:jar deploy:deploy
+    on:
+      branch: develop
