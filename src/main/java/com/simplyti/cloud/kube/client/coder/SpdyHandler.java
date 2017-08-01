@@ -52,7 +52,7 @@ public class SpdyHandler extends SimpleChannelInboundHandler<SpdyStreamFrame> {
 					}else{
 						promise.setSuccess(EMPTY);
 					}
-				}else if(rstFrame.streamId()==5){
+				}else if(rstFrame.streamId()==5 && isFail){
 					if(err!=null){
 						promise.setFailure(new KubeClientErrorException("Error executing command: "+err.toString(CharsetUtil.UTF_8).trim()));
 						err.release();
