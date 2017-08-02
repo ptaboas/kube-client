@@ -17,6 +17,6 @@ script:
 deploy:
   -
     provider: script
-    script: mvn --settings=./.travis/settings.xml jar:jar deploy:deploy
+    script: .travis/deploy.sh
     on:
       branch: develop
