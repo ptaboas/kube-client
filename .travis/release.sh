@@ -22,9 +22,9 @@ increment_version () {
  	mvn versions:set -DnewVersion=$DEVELOPMENT_VERISON -DgenerateBackupPoms=false
 }
 
-RELEASE_VERSION=`mvn help:evaluate -Dexpression=project.version | grep -v '\[' | sed 's/-SNAPSHOT$//'`
+RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version | grep -v '\[' | sed 's/-SNAPSHOT$//')
 mvn versions:set -DnewVersion=$RELEASE_VERSION -DgenerateBackupPoms=false
-mvn --settings=./.travis/settings.xml jar:jar deploy:deploy
+#mvn --settings=./.travis/settings.xml jar:jar deploy:deploy
 
 #setup_git
 #commit_changes "Travis: Set release version"
