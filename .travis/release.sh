@@ -18,8 +18,8 @@ upload_files() {
 increment_version () { 
 	a=( ${1//./ } )
 	((a[2]++))
-   	DEVELOPMENT_VERISON="${a[0]}.${a[1]}.${a[2]}-SNAPSHOT"
-   	mvn versions:set -DnewVersion=$DEVELOPMENT_VERISON -DgenerateBackupPoms=false
+ 	DEVELOPMENT_VERISON="${a[0]}.${a[1]}.${a[2]}-SNAPSHOT"
+ 	mvn versions:set -DnewVersion=$DEVELOPMENT_VERISON -DgenerateBackupPoms=false
 }
 
 RELEASE_VERSION=`mvn help:evaluate -Dexpression=project.version | grep -v '\[' | sed 's/-SNAPSHOT$//'`
