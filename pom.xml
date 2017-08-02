@@ -16,6 +16,7 @@
 		<jacoco-maven-plugin.version>0.7.9</jacoco-maven-plugin.version>
 		<coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
 		<maven-help-plugin.version>2.2</maven-help-plugin.version>
+		<versions-maven-plugin.version>2.4</versions-maven-plugin.version>
 
 		<lombok.version>1.16.16</lombok.version>
 		<netty.version>4.1.11.Final</netty.version>
@@ -70,8 +71,13 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-				    <artifactId>maven-help-plugin</artifactId>
-				    <version>${maven-help-plugin.version}</version>
+					<artifactId>maven-help-plugin</artifactId>
+					<version>${maven-help-plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>versions-maven-plugin</artifactId>
+					<version>${versions-maven-plugin.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
