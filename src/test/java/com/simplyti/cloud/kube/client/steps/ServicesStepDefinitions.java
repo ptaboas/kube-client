@@ -244,7 +244,7 @@ public class ServicesStepDefinitions {
 		
 		await().pollInterval(1, TimeUnit.SECONDS).atMost(30,TimeUnit.SECONDS)
 		.until(()->events.stream().filter(event->event.getObject().getMetadata().getNamespace().equals(resource.getMetadata().getNamespace())).collect(Collectors.toList()),
-				hasSize(greaterThanOrEqualTo(1)));
+				hasItem(hasProperty("type",equalTo(type))));
 		
 		List<Event<KubernetesResource>> filteredEvents = events.stream().filter(event->event.getObject().getMetadata().getNamespace().equals(resource.getMetadata().getNamespace())).collect(Collectors.toList());
 		assertThat(filteredEvents,hasItem(hasProperty("type",equalTo(type))));
