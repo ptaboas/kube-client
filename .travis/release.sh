@@ -22,7 +22,7 @@ increment_version () {
    	mvn versions:set -DnewVersion=$DEVELOPMENT_VERISON -DgenerateBackupPoms=false
 }
 
-RELEASE_VERSION=`mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -v '\[' | sed 's/-SNAPSHOT$//'`
+RELEASE_VERSION=`mvn help:evaluate -Dexpression=project.version | grep -v '\[' | sed 's/-SNAPSHOT$//'`
 mvn versions:set -DnewVersion=$RELEASE_VERSION -DgenerateBackupPoms=false
 mvn --settings=./.travis/settings.xml jar:jar deploy:deploy
 
