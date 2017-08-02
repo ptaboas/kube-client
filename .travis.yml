@@ -20,3 +20,8 @@ deploy:
     script: .travis/deploy.sh
     on:
       branch: develop
+  -
+    provider: script
+    script: .travis/release.sh
+    on:
+      branch: develop
