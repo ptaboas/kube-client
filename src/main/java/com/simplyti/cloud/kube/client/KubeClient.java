@@ -88,7 +88,6 @@ public class KubeClient {
 				.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
 				.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
 				.remoteAddress(server.getHost(),server.getPort());
-		 
 		this.pool = new SimpleChannelPool(b, new KubeChannelPoolHandler(Joiner.on(":").join(server.getHost(),server.getPort()),verbose,sslContextProvider,tokenProvider));
 	}
 	
@@ -144,8 +143,7 @@ public class KubeClient {
 		return createPod(namespace,name,image,null,null,readinessProbe,mountServiceAccount);
 	}
 	
-	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Collection<String> command, Probe readinessProbe,
-			Boolean mountServiceAccount) {
+	public Future<Pod> createPod(String namespace, String name, String image, Map<String, String> labels, Collection<String> command, Probe readinessProbe, Boolean mountServiceAccount) {
 		return sendRequest(new CreatePodRequest(namespace,name,image,labels,command,readinessProbe,mountServiceAccount));
 	}
 	
@@ -157,7 +155,7 @@ public class KubeClient {
 		return sendRequest(new GetPodRequest(namespace,name));
 	}
 	
-	public Future<PodList> getpods(String namespace) {
+	public Future<PodList> getPods(String namespace) {
 		return sendRequest(new GetPodsRequest(namespace));
 	}
 	
@@ -201,6 +199,18 @@ public class KubeClient {
 		return sendRequest(new CreateSecretRequest(namespace,name,data));
 	}
 
+	public Observable<Service> observeServices(String index) {
+		return observe(index,newIndex->new GetServiceEventsRequest(newIndex));
+	}
+	
+	public Observable<Endpoint> observeEndpoints(String index) {
+		return observe(index,newIndex->new GetEndpointEventsRequest(newIndex));
+	}
+	
+	public Observable<Pod> observePods(String index) {
+		return observe(index,newIndex->new GetPodEventsRequest(newIndex));
+	}
+	
 	private <T> Future<T> sendRequest(KubernetesApiRequest apiRequest) {
 		Promise<T> promise = eventLoopGroup.next().newPromise();
 		pool.acquire().addListener(future->{
@@ -212,29 +222,17 @@ public class KubeClient {
 		return promise;
 	}
 	
-	public Observable<Service> observeServices(String index) {
-		return observeServices(index,newIndex->new GetServiceEventsRequest(newIndex));
-	}
-	
-	public Observable<Endpoint> observeEndpoints(String index) {
-		return observeServices(index,newIndex->new GetEndpointEventsRequest(newIndex));
-	}
-	
-	public Observable<Pod> observePods(String index) {
-		return observeServices(index,newIndex->new GetPodEventsRequest(newIndex));
-	}
-	
-	public <T extends KubernetesResource> Observable<T> observeServices(String index,Function<String,KubernetesApiRequest> reqSupplier) {
+	public <T extends KubernetesResource> Observable<T> observe(String index,Function<String,KubernetesApiRequest> reqSupplier) {
 		EventLoop executor = eventLoopGroup.next();
 		Observable<T> observable = new Observable<>(executor,index);
-		observeServices0(observable,reqSupplier);
+		observe0(observable,reqSupplier);
 		return observable;
 	}
 
-	private <T extends KubernetesResource> void observeServices0(Observable<T> observable,Function<String,KubernetesApiRequest> reqSupplier) {
+	private <T extends KubernetesResource> void observe0(Observable<T> observable,Function<String,KubernetesApiRequest> reqSupplier) {
 		pool.acquire().addListener(future->{
 			 Channel channel = (Channel) future.get();
-			 observable.setChannel(channel,ob->this.observeServices0(ob,reqSupplier));
+			 observable.setChannel(channel,ob->this.observe0(ob,reqSupplier));
 			 channel.attr(OBSERVABLE_RESPONSE).set(observable);
 			 channel.writeAndFlush(reqSupplier.apply(observable.index()));
 		});
