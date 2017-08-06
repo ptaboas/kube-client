@@ -22,11 +22,14 @@
 # 	mvn versions:set -DnewVersion=$DEVELOPMENT_VERISON -DgenerateBackupPoms=false
 #}
 
+openssl aes-256-cbc -K $encrypted_85c50a6b4452_key -iv $encrypted_85c50a6b4452_iv -in ./.travis/codesigning.asc.enc -out codesigning.asc -d
+gpg --fast-import cd/signingkey.asc
+
 mvn help:evaluate -Dexpression=project.version
 RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version | grep -v '\[' | sed 's/-SNAPSHOT$//')
 echo "Release version is $RELEASE_VERSION"
 mvn versions:set -DnewVersion=$RELEASE_VERSION -DgenerateBackupPoms=false
-mvn --settings=./.travis/settings.xml jar:jar deploy:deploy
+mvn --settings=./.travis/settings.xml jar:jar source:jar-no-fork gpg:sign deploy:deploy
 
 #setup_git
 #commit_changes "Travis: Set release version"
