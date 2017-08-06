@@ -1,11 +1,36 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <groupId>com.simplyti.cloud</groupId>
-  <artifactId>kube-client</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  
-  <properties>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.simplyti.cloud</groupId>
+	<artifactId>kube-client</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<name>Kubernetes client</name>
+	<description>Kubernetes api server client</description>
+	<url>https://github.com/simplyti/kube-client</url>
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<url>https://github.com/simplyti/kube-client</url>
+		<connection>scm:git:git://github.com/simplyti/kube-client.git</connection>
+		<developerConnection>scm:git:git@github.com:username/kube-client.git</developerConnection>
+	</scm>
+	
+	<developers>
+		<developer>
+			<id>ptaboas</id>
+			<name>Pablo Taboas</name>
+			<email>p.taboas@simplyti.com</email>
+		</developer>
+	</developers>
+
+	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<java.version>1.8</java.version>
@@ -17,6 +42,9 @@
 		<coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
 		<maven-help-plugin.version>2.2</maven-help-plugin.version>
 		<versions-maven-plugin.version>2.4</versions-maven-plugin.version>
+		<maven-source-plugin.version>3.0.1</maven-source-plugin.version>
+		<maven-javadoc-plugin.version>3.0.0-M1</maven-javadoc-plugin.version>
+		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
 
 		<lombok.version>1.16.16</lombok.version>
 		<netty.version>4.1.11.Final</netty.version>
@@ -28,6 +56,7 @@
 
 		<junit.version>4.12</junit.version>
 		<hamcrest.version>1.3</hamcrest.version>
+		<awaitility.version>1.7.0</awaitility.version>
 		<cucumber.version>1.2.5</cucumber.version>
 		<guice.version>4.1.0</guice.version>
 		<commons-io.version>2.4</commons-io.version>
@@ -36,11 +65,11 @@
 
 	<build>
 		<testResources>
-	      <testResource>
-	        <directory>src/test/resources</directory>
-	        <filtering>true</filtering>
-	      </testResource>
-	    </testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<filtering>true</filtering>
+			</testResource>
+		</testResources>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -62,12 +91,12 @@
 					</configuration>
 				</plugin>
 				<plugin>
-				    <groupId>org.eluder.coveralls</groupId>
-				    <artifactId>coveralls-maven-plugin</artifactId>
-				    <version>${coveralls-maven-plugin.version}</version>
-				    <configuration>
-				        <repoToken>${coveralls.token}</repoToken>
-				    </configuration>
+					<groupId>org.eluder.coveralls</groupId>
+					<artifactId>coveralls-maven-plugin</artifactId>
+					<version>${coveralls-maven-plugin.version}</version>
+					<configuration>
+						<repoToken>${coveralls.token}</repoToken>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -78,6 +107,21 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>versions-maven-plugin</artifactId>
 					<version>${versions-maven-plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${maven-source-plugin.version}</version>
+				</plugin>
+				<plugin>
+			        <groupId>org.apache.maven.plugins</groupId>
+			        <artifactId>maven-javadoc-plugin</artifactId>
+			        <version>${maven-javadoc-plugin.version}</version>
+			    </plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${maven-gpg-plugin.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -217,14 +261,14 @@
 			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.fasterxml.jackson.datatype</groupId>
-		    <artifactId>jackson-datatype-jsr310</artifactId>
-		    <version>${jackson.version}</version>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.fasterxml.jackson.module</groupId>
-		    <artifactId>jackson-module-parameter-names</artifactId>
-		    <version>${jackson.version}</version>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-parameter-names</artifactId>
+			<version>${jackson.version}</version>
 		</dependency>
 
 		<!-- Guava -->
@@ -262,7 +306,7 @@
 		<dependency>
 			<groupId>com.jayway.awaitility</groupId>
 			<artifactId>awaitility</artifactId>
-			<version>1.7.0</version>
+			<version>${awaitility.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -284,22 +328,22 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>commons-io</groupId>
-		    <artifactId>commons-io</artifactId>
-		    <version>${commons-io.version}</version>
-		    <scope>test</scope>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>${commons-io.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
 
 	<distributionManagement>
 		<repository>
-	      <id>sonatype-nexus-staging</id>
-	      <name>Nexus Release Repository</name>
-	      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-	    </repository>
+			<id>ossrh</id>
+			<name>Nexus Release Repository</name>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+		</repository>
 		<snapshotRepository>
-			<id>sonatype-nexus-snapshots</id>
+			<id>ossrh</id>
 			<name>Sonatype Nexus Snapshots</name>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>

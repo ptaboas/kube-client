@@ -136,7 +136,7 @@ public class PodsStepDefinitions {
 	
 	@When("^I get pods \"([^\"]*)\" in namespace \"([^\"]*)\"$")
 	public void iGetPodListThePodList(String key,String namespace) throws Throwable {
-		Future<PodList> result = client.getpods(namespace).await();
+		Future<PodList> result = client.getPods(namespace).await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 		scenarioData.put(key, result.getNow());
