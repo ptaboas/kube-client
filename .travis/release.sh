@@ -23,7 +23,7 @@
 #}
 
 openssl aes-256-cbc -K $encrypted_85c50a6b4452_key -iv $encrypted_85c50a6b4452_iv -in ./.travis/codesigning.asc.enc -out codesigning.asc -d
-gpg --fast-import cd/signingkey.asc
+gpg --fast-import ./.travis/signingkey.asc
 
 mvn help:evaluate -Dexpression=project.version
 RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version | grep -v '\[' | sed 's/-SNAPSHOT$//')
