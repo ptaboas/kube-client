@@ -43,6 +43,7 @@
 		<maven-help-plugin.version>2.2</maven-help-plugin.version>
 		<versions-maven-plugin.version>2.4</versions-maven-plugin.version>
 		<maven-source-plugin.version>3.0.1</maven-source-plugin.version>
+		<maven-javadoc-plugin.version>3.0.0-M1</maven-javadoc-plugin.version>
 		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
 
 		<lombok.version>1.16.16</lombok.version>
@@ -112,6 +113,11 @@
 					<artifactId>maven-source-plugin</artifactId>
 					<version>${maven-source-plugin.version}</version>
 				</plugin>
+				<plugin>
+			        <groupId>org.apache.maven.plugins</groupId>
+			        <artifactId>maven-javadoc-plugin</artifactId>
+			        <version>${maven-javadoc-plugin.version}</version>
+			    </plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>

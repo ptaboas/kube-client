@@ -29,7 +29,7 @@ mvn help:evaluate -Dexpression=project.version
 RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version | grep -v '\[' | sed 's/-SNAPSHOT$//')
 echo "Release version is $RELEASE_VERSION"
 mvn versions:set -DnewVersion=$RELEASE_VERSION -DgenerateBackupPoms=false
-mvn --settings=./.travis/settings.xml jar:jar source:jar-no-fork gpg:sign deploy:deploy
+mvn --settings=./.travis/settings.xml jar:jar source:jar-no-fork javadoc:jar gpg:sign deploy:deploy
 
 #setup_git
 #commit_changes "Travis: Set release version"
