@@ -58,8 +58,7 @@ public class ClientStepDefinitions {
 	@When("^I crete a kubernetes client \"([^\"]*)\" with next options:$")
 	public void iCreteAKubernetesClientWithNextOptions(String key, Map<String,String> options) throws Throwable {
 	    KubeClientBuilder builder = KubeClient.builder()
-	    		.eventLoop(new NioEventLoopGroup())
-	    		.verbose(true);
+	    		.eventLoop(new NioEventLoopGroup());
 	    builder.server(options.get(SERVER));
 	    if(options.containsKey(CA_FILE)){
 	    	builder.caFile(BUILD_DIR.resolve(options.get(CA_FILE)).toString());
