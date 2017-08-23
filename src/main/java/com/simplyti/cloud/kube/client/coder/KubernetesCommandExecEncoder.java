@@ -29,7 +29,7 @@ public class KubernetesCommandExecEncoder extends MessageToMessageEncoder<Kubern
 	protected void encode(ChannelHandlerContext ctx, KubernetesCommandExec msg, List<Object> out) throws Exception {
 		QueryStringEncoder encoder = new QueryStringEncoder("/api/v1/namespaces/"+msg.getNamespace()+"/pods/"+msg.getName()+"/exec");
 		Splitter.on(' ').split(msg.getCommand()).forEach(command->encoder.addParam("command", command));
-		encoder.addParam("container", msg.getName());
+		encoder.addParam("container", msg.getContainer());
 		encoder.addParam("stdout", "true");
 		encoder.addParam("stderr", "true");
 		

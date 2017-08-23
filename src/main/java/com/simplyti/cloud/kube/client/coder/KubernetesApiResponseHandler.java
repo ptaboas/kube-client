@@ -1,8 +1,10 @@
 package com.simplyti.cloud.kube.client.coder;
 
 import java.io.InputStream;
+import java.lang.reflect.ParameterizedType;
 
-import com.simplyti.cloud.kube.client.KubeClient;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.simplyti.cloud.kube.client.InternalClient;
 import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.KubernetesResource;
 import com.simplyti.cloud.kube.client.exception.KubeClientErrorException;
@@ -32,7 +34,7 @@ public class KubernetesApiResponseHandler extends SimpleChannelInboundHandler<Ob
 
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-		Class<?> responseclass = ctx.channel().attr(KubernetesApiRequestEncoder.RESPONSE_CLASS).get();
+		TypeReference<?> responseclass = ctx.channel().attr(KubernetesApiRequestEncoder.RESPONSE_CLASS).get();
 		ByteBuf content;
 		if(msg instanceof FullHttpResponse){
 			content = ((FullHttpResponse)msg).content();
@@ -40,14 +42,14 @@ public class KubernetesApiResponseHandler extends SimpleChannelInboundHandler<Ob
 			content = (ByteBuf) msg;
 		}
 		
-		if(Event.class.isAssignableFrom((Class<?>) responseclass)){
-			Observable<KubernetesResource> observable = ctx.channel().attr(AttributeKey.<Observable<KubernetesResource>>valueOf(KubeClient.OBSERVABLE_RESPONSE_NAME)).get();
+		if(isEventClass(responseclass)){
+			Observable<KubernetesResource> observable = ctx.channel().attr(AttributeKey.<Observable<KubernetesResource>>valueOf(InternalClient.OBSERVABLE_RESPONSE_NAME)).get();
 			@SuppressWarnings("unchecked")
 			Event<KubernetesResource> response = (Event<KubernetesResource>) mapper.readValue((InputStream)new ByteBufInputStream(content), responseclass);
 			observable.notifyObservers(response);
 		}else{
-			Promise<Object> future = ctx.channel().attr(AttributeKey.<Promise<Object>>valueOf(KubeClient.SINGLE_RESPONSE_PROMISE_NAME)).get();
-			if(responseclass.equals(String.class)){
+			Promise<Object> future = ctx.channel().attr(AttributeKey.<Promise<Object>>valueOf(InternalClient.SINGLE_RESPONSE_PROMISE_NAME)).get();
+			if(responseclass.getType().equals(String.class)){
 				future.setSuccess(content.readSlice(content.readableBytes()).toString(CharsetUtil.UTF_8));
 			}else{
 				if(msg instanceof HttpResponse){
@@ -64,6 +66,14 @@ public class KubernetesApiResponseHandler extends SimpleChannelInboundHandler<Ob
 				}
 			}
 		}
+	}
+
+	private boolean isEventClass(TypeReference<?> responseclass) {
+		if(responseclass.getType() instanceof ParameterizedType){
+			ParameterizedType parameterizedType = (ParameterizedType) responseclass.getType();
+			return Event.class.isAssignableFrom((Class<?>) parameterizedType.getRawType());
+		}
+		return false;
 	}
 
 }

@@ -6,10 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -18,12 +20,17 @@ import javax.inject.Inject;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.simplyti.cloud.kube.client.KubeClient;
 import com.simplyti.cloud.kube.client.domain.Event;
+import com.simplyti.cloud.kube.client.domain.HttpProbe;
 import com.simplyti.cloud.kube.client.domain.Pod;
-import com.simplyti.cloud.kube.client.domain.PodList;
 import com.simplyti.cloud.kube.client.domain.PodPhase;
 import com.simplyti.cloud.kube.client.domain.Probe;
+import com.simplyti.cloud.kube.client.domain.ResourceList;
+import com.simplyti.cloud.kube.client.domain.TcpProbe;
+import com.simplyti.cloud.kube.client.pods.PodCreationBuilder;
+import com.simplyti.cloud.kube.client.pods.PodUpdater;
 
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -39,10 +46,30 @@ public class PodsStepDefinitions {
 	
 	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\" and image \"([^\"]*)\"$")
 	public Pod iCreateAPodInNamespaceWithNameandImage(String namespace, String name, String image) throws Throwable {
-		Future<Pod> result = client.createPod(namespace,name,image,false).await();
+		Future<Pod> result = client.namespace(namespace).pods().builder()
+				.withName(name)
+				.withContainer()
+					.withImage(image)
+					.create()
+				.create().await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 		return result.getNow();
+	}
+	
+
+	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\" and container images \"([^\"]*)\"$")
+	public void iCreateAPodInNamespaceWithNameAndContainerImages(String namespace, String name, List<String> images) throws Throwable {
+		PodCreationBuilder builder = client.namespace(namespace).pods().builder()
+				.withName(name);
+		images.forEach(image->{
+			builder.withContainer()
+				.withImage(image)
+				.create();
+		});
+		Future<Pod> result = builder.create().await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
 	}
 	
 	@When("^I create a pod \"([^\"]*)\" in namespace \"([^\"]*)\" with name \"([^\"]*)\" and image \"([^\"]*)\"$")
@@ -52,25 +79,96 @@ public class PodsStepDefinitions {
 	
 	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\", image \"([^\"]*)\" and readiness probe \"([^\"]*)\"$")
 	public Pod iCreateAPodInNamespaceWithNameImageAndReadinessProbe(String namespace, String name, String image, String readinessProbe) throws Throwable {
-		Future<Pod> result = client.createPod(namespace,name,image,Probe.exec(ImmutableSet.copyOf(Splitter.on(' ').split(readinessProbe)),1,1,1,1),false).await();
+		Future<Pod> result = client.namespace(namespace).pods().builder()
+				.withName(name)
+				.withContainer()
+					.withImage(image)
+					.withReadinessProbe(Probe.exec(ImmutableSet.copyOf(Splitter.on(' ').split(readinessProbe)),1,1,1,1))
+					.create()
+				.create().await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 		return result.getNow();
 	}
 	
+	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\", image \"([^\"]*)\" and http readiness probe \"([^\"]*)\" in port (\\d+)$")
+	public void iCreateAPodInNamespaceWithNameImageAndHttpReadinessProbe(String namespace, String name, String image, String httpPath,int port) throws Throwable {
+		Future<Pod> result = client.namespace(namespace).pods().builder()
+				.withName(name)
+				.withContainer()
+					.withImage(image)
+					.withReadinessProbe(Probe.http(httpPath,port,1,1,1,1))
+					.create()
+				.create().await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
+	}
+	
+	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\", image \"([^\"]*)\" and tcp readiness probe in port (\\d+)$")
+	public void iCreateAPodInNamespaceWithNameImageAndHttpReadinessProbe(String namespace, String name, String image, int port) throws Throwable {
+		Future<Pod> result = client.namespace(namespace).pods().builder()
+				.withName(name)
+				.withContainer()
+					.withImage(image)
+					.withReadinessProbe(Probe.tcp(port,1,1,1,1))
+					.create()
+				.create().await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
+	}
+	
+	@When("^I update pod \"([^\"]*)\" adding new label \"([^\"]*)\"$")
+	public void iUpdatePodAddingNewLabel(String key, String labels) throws Throwable {
+		Map<String, String> labelsMap = Splitter.on(',').withKeyValueSeparator('=').split(labels);
+		Pod pod = (Pod) scenarioData.get(key);
+		PodUpdater updater = client.namespace(pod.getMetadata().getNamespace()).pods().update(pod.getMetadata().getName());
+		labelsMap.forEach((k,v)->updater.addLabel(k,v));
+		Future<Pod> result = updater.update().await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
+	}
+	
+	@When("^I update pod \"([^\"]*)\" adding new label \"([^\"]*)\" waiting a while after get the updatter$")
+	public void iUpdatePodAddingNewLabelWaitingAWhileAfterGetTheUpdatter(String key, String labels) throws Throwable {
+		Map<String, String> labelsMap = Splitter.on(',').withKeyValueSeparator('=').split(labels);
+		Pod pod = (Pod) scenarioData.get(key);
+		PodUpdater updater = client.namespace(pod.getMetadata().getNamespace()).pods().update(pod.getMetadata().getName());
+		Thread.sleep(500);
+		labelsMap.forEach((k,v)->updater.addLabel(k,v));
+		Future<Pod> result = updater.update().await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
+	}
+	
 	@Then("^I check that exist a pod \"([^\"]*)\" with name \"([^\"]*)\" in namespace \"([^\"]*)\"$")
 	public void iCheckThatExistAPodWithNameInNamespace(String key, String name, String namespace) throws Throwable {
-		Future<Pod> result = client.getPod(namespace,name).await();
+		Future<Pod> result = client.namespace(namespace).pods().get(name).await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 		scenarioData.put(key, result.getNow());
 	}
 	
+	@Then("^I check that pod \"([^\"]*)\" has http readiness probe \"([^\"]*)\"$")
+	public void iCheckThatPodHasHttpReadinessProbeState(String key, String path) throws Throwable {
+		Pod pod = (Pod) scenarioData.get(key);
+		assertThat(Iterables.getFirst(pod.getSpec().getContainers(), null).getReadinessProbe(),instanceOf(HttpProbe.class));
+		HttpProbe probe = (HttpProbe) Iterables.getFirst(pod.getSpec().getContainers(), null).getReadinessProbe();
+		assertThat(probe.getHttpGet().getPath(),equalTo(path));
+	}
+	
+	@Then("^I check that pod \"([^\"]*)\" has tcp readiness probe in port (\\d+)$")
+	public void iCheckThatPodHasHttpReadinessProbeState(String key, int port) throws Throwable {
+		Pod pod = (Pod) scenarioData.get(key);
+		assertThat(Iterables.getFirst(pod.getSpec().getContainers(), null).getReadinessProbe(),instanceOf(TcpProbe.class));
+		TcpProbe probe = (TcpProbe) Iterables.getFirst(pod.getSpec().getContainers(), null).getReadinessProbe();
+		assertThat(probe.getTcpSocket().getPort(),equalTo(port));
+	}
+	
 	@Then("^I check that pod \"([^\"]*)\" has \"([^\"]*)\" state$")
 	public void iCheckThatServiceHasState(String key, String state) throws Throwable {
 		Pod pod = (Pod) scenarioData.get(key);
-		await().pollInterval(1, TimeUnit.SECONDS).atMost(30,TimeUnit.SECONDS)
-		.until(()->client.getPod(pod.getMetadata().getNamespace(), pod.getMetadata().getName()).await().getNow().getStatus().getPhase(),
+		await().pollInterval(1, TimeUnit.SECONDS).atMost(50,TimeUnit.SECONDS)
+		.until(()->client.pods().namespace(pod.getMetadata().getNamespace()).get(pod.getMetadata().getName()).await().getNow().getStatus().getPhase(),
 				equalTo(PodPhase.RUNNING));
 		
 	}
@@ -79,7 +177,7 @@ public class PodsStepDefinitions {
 	public void iCheckThatPodIsNotReady(String key) throws Throwable {
 		Pod pod = (Pod) scenarioData.get(key);
 		await().pollInterval(1, TimeUnit.SECONDS).atMost(30,TimeUnit.SECONDS)
-		.until(()->client.getPod(pod.getMetadata().getNamespace(), pod.getMetadata().getName()).await().getNow().getStatus().getContainerStatuses().get(0).getReady(),
+		.until(()->client.pods().namespace(pod.getMetadata().getNamespace()).get(pod.getMetadata().getName()).await().getNow().getStatus().getContainerStatuses().get(0).getReady(),
 				equalTo(false));
 	}
 	
@@ -87,14 +185,14 @@ public class PodsStepDefinitions {
 	public void iCheckThatPodIsReady(String key) throws Throwable {
 		Pod pod = (Pod) scenarioData.get(key);
 		await().pollInterval(1, TimeUnit.SECONDS).atMost(30,TimeUnit.SECONDS)
-		.until(()->client.getPod(pod.getMetadata().getNamespace(), pod.getMetadata().getName()).await().getNow().getStatus().getContainerStatuses().get(0).getReady(),
+		.until(()->client.pods().namespace(pod.getMetadata().getNamespace()).get(pod.getMetadata().getName()).await().getNow().getStatus().getContainerStatuses().get(0).getReady(),
 				equalTo(true));
 	}
 	
 	@When("^I execute next command \"([^\"]*)\" in pod \"([^\"]*)\"$")
 	public byte[] iExecuteNextCommandInPod(String command, String key) throws Throwable {
 		Pod pod = (Pod) scenarioData.get(key);
-		Future<byte[]> result = client.executeCommand(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), command).await();
+		Future<byte[]> result = client.pods().namespace(pod.getMetadata().getNamespace()).execute(pod.getMetadata().getName(),command).await();
 		assertTrue(result.isSuccess());
 		return result.getNow();
 	}
@@ -107,8 +205,15 @@ public class PodsStepDefinitions {
 	@When("^I try to execute next command \"([^\"]*)\" in pod \"([^\"]*)\" getting result \"([^\"]*)\"$")
 	public void iTryToExecuteNextCommandInPodGettingResult(String command, String key, String resultKey) throws Throwable {
 		Pod pod = (Pod) scenarioData.get(key);
-		Future<byte[]> result = client.executeCommand(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), command).await();
+		Future<byte[]> result = client.namespace(pod.getMetadata().getNamespace()).pods().execute(pod.getMetadata().getName(),command).await();
 		scenarioData.put(resultKey, result);
+	}
+	
+	@When("^I execute next command \"([^\"]*)\" in container \"([^\"]*)\" of pod \"([^\"]*)\" getting result \"([^\"]*)\"$")
+	public void iExecuteNextCommandInContainerOfPodGettingResult(String command, String container, String key, String resultKey) throws Throwable {
+		Pod pod = (Pod) scenarioData.get(key);
+		Future<byte[]> result = client.namespace(pod.getMetadata().getNamespace()).pods().execute(pod.getMetadata().getName(),container,command).await();
+		scenarioData.put(resultKey, result.getNow());
 	}
 	
 	@Then("^I check command result \"([^\"]*)\" contains value \"([^\"]*)\"$")
@@ -122,7 +227,7 @@ public class PodsStepDefinitions {
 	@Then("^I delete pod \"([^\"]*)\"$")
 	public void iDeletePod(String key) throws Throwable {
 		Pod pod = (Pod) scenarioData.get(key);
-		Future<Void> result = client.deletePod(pod.getMetadata().getNamespace(), pod.getMetadata().getName()).await();
+		Future<Void> result = client.namespace(pod.getMetadata().getNamespace()).pods().delete(pod.getMetadata().getName()).await();
 		assertTrue(result.isSuccess());
 	}
 
@@ -130,13 +235,13 @@ public class PodsStepDefinitions {
 	public void iCheckThatDoNotExistThePod(String key) throws Throwable {
 		Pod pod = (Pod) scenarioData.get(key);
 		await().pollInterval(1, TimeUnit.SECONDS).atMost(30,TimeUnit.SECONDS)
-		.until(()->client.getPod(pod.getMetadata().getNamespace(), pod.getMetadata().getName()).await().getNow(),
+		.until(()->client.namespace(pod.getMetadata().getNamespace()).pods().get(pod.getMetadata().getName()).await().getNow(),
 				nullValue());
 	}
 	
 	@When("^I get pods \"([^\"]*)\" in namespace \"([^\"]*)\"$")
 	public void iGetPodListThePodList(String key,String namespace) throws Throwable {
-		Future<PodList> result = client.getPods(namespace).await();
+		Future<ResourceList<Pod>> result = client.pods().namespace(namespace).list().await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 		scenarioData.put(key, result.getNow());
@@ -144,16 +249,17 @@ public class PodsStepDefinitions {
 
 	@Then("^I check that pod list \"([^\"]*)\" contains pod \"([^\"]*)\"$")
 	public void iCheckThatPodListContainsPod(String listKey, String podKey) throws Throwable {
-		PodList pods = (PodList) scenarioData.get(listKey);
+		@SuppressWarnings("unchecked")
+		ResourceList<Pod> pods = (ResourceList<Pod>) scenarioData.get(listKey);
 		Pod pod = (Pod) scenarioData.get(podKey);
 		assertThat(pods.getItems(),contains(hasProperty("metadata",hasProperty("name",equalTo(pod.getMetadata().getName())))));
 	}
 	
-	@When("^I observe pods storing events in \"([^\"]*)\"$")
-	public void iObservePodsStoringEventsIn(String key) throws Throwable {
-		String index = client.getPods().await().getNow().getMetadata().getResourceVersion();
+	@When("^I observe pods in namespace \"([^\"]*)\" storing events in \"([^\"]*)\"$")
+	public void iObservePodsStoringEventsIn(String namespace, String key) throws Throwable {
+		String index = client.pods().list().await().getNow().getMetadata().getResourceVersion();
 		Set<Event<Pod>> events = new HashSet<>();
-		client.observePods(index).onEvent(event->{
+		client.pods().namespace(namespace).watch(index).onEvent(event->{
 			events.add(event);
 		});
 		scenarioData.put(key, events);

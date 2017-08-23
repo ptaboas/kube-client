@@ -73,4 +73,8 @@ public class Observable<T extends KubernetesResource> {
 			}
 		});
 	}
+
+	public EventLoop executor() {
+		return executor;
+	}
 }

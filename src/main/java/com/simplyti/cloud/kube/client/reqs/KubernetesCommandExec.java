@@ -9,6 +9,7 @@ public class KubernetesCommandExec {
 	
 	private final String namespace;
 	private final String name;
+	private final String container;
 	private final String command;
 
 }

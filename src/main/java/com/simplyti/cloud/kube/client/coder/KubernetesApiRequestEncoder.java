@@ -3,6 +3,7 @@ package com.simplyti.cloud.kube.client.coder;
 import java.io.OutputStream;
 import java.util.List;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.simplyti.cloud.kube.client.mapper.KubeObjectMapper;
 import com.simplyti.cloud.kube.client.reqs.KubernetesApiRequest;
 
@@ -15,6 +16,8 @@ import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.AttributeKey;
 import lombok.AllArgsConstructor;
@@ -23,7 +26,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class KubernetesApiRequestEncoder extends MessageToMessageEncoder<KubernetesApiRequest>{
 	
-	public static final AttributeKey<Class<?>> RESPONSE_CLASS = AttributeKey.valueOf("responseClass");
+	public static final AttributeKey<TypeReference<?>> RESPONSE_CLASS = AttributeKey.valueOf("responseClass");
 	
 	private final KubeObjectMapper mapper;
 
@@ -48,6 +51,11 @@ public class KubernetesApiRequestEncoder extends MessageToMessageEncoder<Kuberne
 		}
 		
 		FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, msg.getMethod(), msg.getUri(),buffer);
+		if(msg.getMethod().equals(HttpMethod.PATCH)){
+			req.headers().add(HttpHeaderNames.CONTENT_TYPE,"application/json-patch+json");
+		}else if(msg.getBody()!=null){
+			req.headers().add(HttpHeaderNames.CONTENT_TYPE,HttpHeaderValues.APPLICATION_JSON);
+		}
 		req.headers().add(HttpHeaderNames.CONTENT_LENGTH,buffer.readableBytes());
 		req.headers().set(HttpHeaderNames.HOST,remoteHost);
 		out.add(req);

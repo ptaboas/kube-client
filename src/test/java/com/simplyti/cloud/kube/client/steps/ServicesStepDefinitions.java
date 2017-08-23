@@ -33,13 +33,12 @@ import com.simplyti.cloud.kube.client.KubeClient;
 import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.EventType;
 import com.simplyti.cloud.kube.client.domain.KubernetesResource;
-import com.simplyti.cloud.kube.client.domain.Metadata;
 import com.simplyti.cloud.kube.client.domain.Namespace;
+import com.simplyti.cloud.kube.client.domain.ResourceList;
 import com.simplyti.cloud.kube.client.domain.Service;
-import com.simplyti.cloud.kube.client.domain.ServiceList;
 import com.simplyti.cloud.kube.client.domain.ServicePort;
 import com.simplyti.cloud.kube.client.domain.ServiceProtocol;
-import com.simplyti.cloud.kube.client.domain.ServiceSpec;
+import com.simplyti.cloud.kube.client.services.DefaultServiceCreationBuilder;
 
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
@@ -67,7 +66,7 @@ public class ServicesStepDefinitions {
 	@SuppressWarnings("unchecked")
 	@Given("^a namespace \"([^\"]*)\"$")
 	public void aNamespace(String name) throws Throwable {
-		Future<Namespace> result = client.createNamespace(name).await();
+		Future<Namespace> result = client.namespaces().builder().withName(name).create().await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 		if(scenarioData.containsKey(CREATED_NAMESPACES)){
@@ -89,17 +88,36 @@ public class ServicesStepDefinitions {
 		if(scenarioData.containsKey(CREATED_NAMESPACES)){
 			@SuppressWarnings("unchecked")
 			List<String> namespaces = ((List<String>)scenarioData.get(CREATED_NAMESPACES));
-			namespaces.forEach(client::deleteNamespace);
+			namespaces.forEach(client.namespaces()::delete);
 			
 			await().pollInterval(1, TimeUnit.SECONDS).atMost(30,TimeUnit.SECONDS)
-				.until(()->client.getNamespaces().await().getNow().getItems().stream()
+				.until(()->client.namespaces().list().await().getNow().getItems().stream()
 						.noneMatch(namespace->namespaces.contains(namespace.getMetadata().getName())));
 		}
 	}
 	
 	@When("^I create a service in namespace \"([^\"]*)\" with name \"([^\"]*)\" and port (\\d+)$")
 	public Service iCreateAServiceInNamespaceWithNameAndPort(String namespace, String name, int port) throws Throwable {
-		Future<Service> result = client.createService(namespace,name,Collections.singleton(ServicePort.port(port))).await();
+		Future<Service> result = client.namespace(namespace).services().builder()
+				.withName(name)
+				.withPort()
+					.port(port)
+					.create()
+				.create().await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
+		return result.getNow();
+	}
+	
+	@When("^I create a service in namespace \"([^\"]*)\" with name \"([^\"]*)\" and port \"([^\"]*)\" (\\d+)$")
+	public Service iCreateAServiceInNamespaceWithNameNameAndPort(String namespace, String name, String portName, int port) throws Throwable {
+		Future<Service> result = client.namespace(namespace).services().builder()
+				.withName(name)
+				.withPort()
+					.name(portName)
+					.port(port)
+					.create()
+				.create().await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 		return result.getNow();
@@ -112,7 +130,7 @@ public class ServicesStepDefinitions {
 	
 	@Then("^I check that exist a service \"([^\"]*)\" with name \"([^\"]*)\" in namespace \"([^\"]*)\"$")
 	public void iCheckThatExistAServiceWithNameInNamespace(String key, String name, String namespace) throws Throwable {
-		Future<Service> result = client.getservice(namespace,name).await();
+		Future<Service> result = client.namespace(namespace).services().get(name).await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 		scenarioData.put(key, result.getNow());
@@ -154,14 +172,23 @@ public class ServicesStepDefinitions {
 	@When("^I create a service in namespace \"([^\"]*)\" with name \"([^\"]*)\", port (\\d+) and selector \"([^\"]*)\"$")
 	public void iCreateAServiceInNamespaceWithNamePortAndSelector(String namespace, String name, int port, String selectors) throws Throwable {
 		Map<String, String> selectorsMap = Splitter.on(',').withKeyValueSeparator('=').split(selectors);
-		Future<Service> result = client.createService(namespace,name,Collections.singleton(ServicePort.port(port)),selectorsMap).await();
+		DefaultServiceCreationBuilder builder = client.namespace(namespace).services().builder()
+				.withName(name)
+				.withPort()
+					.port(port)
+					.create();
+		selectorsMap.forEach((k,v)->builder.addSelector(k, v));
+		Future<Service> result = builder.create().await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 	}
 	
 	@When("^I create a service in namespace \"([^\"]*)\" with name \"([^\"]*)\" and next ports:$")
 	public void iCreateAServiceInNamespaceWithNameAndNextPorts(String namespace, String name, List<Map<String,String>> ports) throws Throwable {
-		Future<Service> result = client.createService(namespace,name,ports(ports)).await();
+		Future<Service> result = client.namespace(namespace).services().builder()
+				.withName(name)
+				.withPorts(ports(ports))
+				.create().await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 	}
@@ -186,10 +213,22 @@ public class ServicesStepDefinitions {
 	@When("^I update service \"([^\"]*)\" with new port (\\d+)$")
 	public void iUpdateServiceWithNewPort(String key, int port) throws Throwable {
 		Service service = (Service) scenarioData.get(key);
-		Service newService = new Service(service.getKind(), service.getApiVersion(), 
-				new Metadata(service.getMetadata().getName(), null, service.getMetadata().getNamespace(), null, null, service.getMetadata().getResourceVersion(), null, service.getMetadata().getLabels(), service.getMetadata().getAnnotations()), 
-				new ServiceSpec(service.getSpec().getClusterIP(), Collections.singletonList(ServicePort.port(port)), service.getSpec().getSelector()));
-		Future<Service> result = client.updateService(newService).await();
+		Future<Service> result = client.namespace(service.getMetadata().getNamespace()).services().update(service.getMetadata().getName())
+					.setServicePort(Collections.singletonList(ServicePort.port(port)))
+					.update().await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
+	}
+	
+	@When("^I update service \"([^\"]*)\" adding new port \"([^\"]*)\" (\\d+)$")
+	public void iUpdateServiceAddingNewPort(String key, String portName, int port) throws Throwable {
+		Service service = (Service) scenarioData.get(key);
+		Future<Service> result = client.namespace(service.getMetadata().getNamespace()).services().update(service.getMetadata().getName())
+					.addPort()
+						.name(portName)
+						.port(port)
+						.create()
+					.update().await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 	}
@@ -197,27 +236,38 @@ public class ServicesStepDefinitions {
 	@When("^I delete service \"([^\"]*)\"$")
 	public void iDeleteService(String key) throws Throwable {
 		Service service = (Service) scenarioData.get(key);
-		Future<Void> result = client.deleteService(service.getMetadata().getNamespace(), service.getMetadata().getName()).await();
+		Future<Void> result = client.services().namespace(service.getMetadata().getNamespace()).delete(service.getMetadata().getName()).await();
 		assertTrue(result.isSuccess());
 	}
 
 	@Then("^I check that do not exist the service \"([^\"]*)\"$")
 	public void iCheckThatDoNotExistTheService(String key) throws Throwable {
 		Service service = (Service) scenarioData.get(key);
-		Future<Service> result = client.getservice(service.getMetadata().getNamespace(), service.getMetadata().getName()).await();
+		Future<Service> result = client.namespace(service.getMetadata().getNamespace()).services().get(service.getMetadata().getName()).await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),nullValue());
 	}
 	
 	@When("^I observe services storing events in \"([^\"]*)\"$")
 	public void iObserveServicesStoringEventsIn(String key) throws Throwable {
-		String index = client.getServices().await().getNow().getMetadata().getResourceVersion();
+		String index = client.services().list().await().getNow().getMetadata().getResourceVersion();
 		Set<Event<Service>> events = Sets.newConcurrentHashSet();
-		client.observeServices(index).onEvent(event->{
+		client.services().watch(index).onEvent(event->{
 			events.add(event);
 		});
 		scenarioData.put(key, events);
 	}
+	
+	@When("^I observe services in namespace \"([^\"]*)\" from index in resource list \"([^\"]*)\" storing events in \"([^\"]*)\"$")
+	public void iObserveServicesInNamespaceFromIndexInResourceListStoringEventsIn(String namespace, String listkey, String key) throws Throwable {
+		ResourceList<?> list = (ResourceList<?>) scenarioData.get(listkey);
+		Set<Event<Service>> events = Sets.newConcurrentHashSet();
+		client.services().watch(list.getMetadata().getResourceVersion()).onEvent(event->{
+			events.add(event);
+		});
+		scenarioData.put(key, events);
+	}
+
 	
 	@Then("^I check that observed events \"([^\"]*)\" contains the \"([^\"]*)\" event of \"([^\"]*)\"$")
 	public void iCheckThatObservedEventsContainsTheEventOf(String key, EventType type, String reosurceKey) throws Throwable {
@@ -260,7 +310,7 @@ public class ServicesStepDefinitions {
 	
 	@When("^I retrieve all services \"([^\"]*)\" in namespace \"([^\"]*)\"$")
 	public void iRetrieveAllServicesInNamespace(String key, String namespace) throws Throwable {
-		Future<ServiceList> result = client.getServices(namespace).await();
+		Future<ResourceList<Service>> result = client.services().namespace(namespace).list().await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 		scenarioData.put(key, result.getNow());
@@ -269,8 +319,14 @@ public class ServicesStepDefinitions {
 	@Then("^I check that services \"([^\"]*)\" contains the service \"([^\"]*)\"$")
 	public void iCheckThatServicesContainsTheService(String servicesKey, String serviceKey) throws Throwable {
 		Service service = (Service) scenarioData.get(serviceKey);
-		ServiceList services = (ServiceList) scenarioData.get(servicesKey);
+		@SuppressWarnings("unchecked")
+		ResourceList<Service> services = (ResourceList<Service>) scenarioData.get(servicesKey);
 		assertThat(services.getItems(),contains(hasProperty("metadata",hasProperty("name",equalTo(service.getMetadata().getName())))));
+	}
+	
+	@When("^I get services \"([^\"]*)\" in namespace \"([^\"]*)\"$")
+	public void iGetServicesInNamespace(String key, String namespace) throws Throwable {
+		iRetrieveAllServicesInNamespace(key, namespace);
 	}
 	
 }

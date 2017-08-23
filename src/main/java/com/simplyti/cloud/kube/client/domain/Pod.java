@@ -8,9 +8,6 @@ import lombok.Getter;
 
 public class Pod extends KubernetesResource{
 	
-	public static final String KIND = "Pod";
-	public static final String API = "v1";
-	
 	@Getter
 	private final PodStatus status;
 	

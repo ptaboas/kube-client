@@ -4,7 +4,7 @@ import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-import com.simplyti.cloud.kube.client.KubeClient;
+import com.simplyti.cloud.kube.client.InternalClient;
 import com.simplyti.cloud.kube.client.exception.KubeClientErrorException;
 
 import io.netty.handler.codec.spdy.SpdyDataFrame;
@@ -42,7 +42,7 @@ public class SpdyHandler extends SimpleChannelInboundHandler<SpdyStreamFrame> {
 		}else if(msg instanceof SpdyRstStreamFrame){
 			SpdyRstStreamFrame rstFrame = (SpdyRstStreamFrame) msg;
 			if(rstFrame.status().equals(SpdyStreamStatus.CANCEL)){
-				Promise<byte[]> promise = ctx.channel().attr(AttributeKey.<Promise<byte[]>>valueOf(KubeClient.SINGLE_RESPONSE_PROMISE_NAME)).get();
+				Promise<byte[]> promise = ctx.channel().attr(AttributeKey.<Promise<byte[]>>valueOf(InternalClient.SINGLE_RESPONSE_PROMISE_NAME)).get();
 				if(rstFrame.streamId()==3 && !isFail){
 					if(std!=null){
 						byte[] bytes = new byte[std.readableBytes()];

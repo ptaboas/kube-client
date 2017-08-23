@@ -8,8 +8,10 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.simplyti.cloud.kube.client.domain.ExecProbe;
+import com.simplyti.cloud.kube.client.domain.CommandProbe;
+import com.simplyti.cloud.kube.client.domain.HttpProbe;
 import com.simplyti.cloud.kube.client.domain.Probe;
+import com.simplyti.cloud.kube.client.domain.TcpProbe;
 
 public class ProbeDeserializer extends StdDeserializer<Probe> {
 
@@ -32,9 +34,11 @@ public class ProbeDeserializer extends StdDeserializer<Probe> {
     	final JsonNode node = jp.getCodec().readTree(jp);
         final ObjectMapper mapper = (ObjectMapper)jp.getCodec();
         if (node.has("exec")) {
-            return mapper.treeToValue(node, ExecProbe.class);
-        } else {
-            return null;
+            return mapper.treeToValue(node, CommandProbe.class);
+        } else if (node.has("httpGet")) {
+            return mapper.treeToValue(node, HttpProbe.class);
+        }else{
+        	return mapper.treeToValue(node, TcpProbe.class);
         }
     }
 

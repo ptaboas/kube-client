@@ -4,16 +4,16 @@
 
 	<groupId>com.simplyti.cloud</groupId>
 	<artifactId>kube-client</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 
 	<name>Kubernetes client</name>
 	<description>Kubernetes api server client</description>
 	<url>https://github.com/simplyti/kube-client</url>
 	<licenses>
 		<license>
-			<name>MIT License</name>
-			<url>http://www.opensource.org/licenses/mit-license.php</url>
-			<distribution>repo</distribution>
+			<name>Apache License, Version 2.0</name>
+		    <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		    <distribution>repo</distribution>
 		</license>
 	</licenses>
 	<scm>
@@ -46,11 +46,11 @@
 		<maven-javadoc-plugin.version>3.0.0-M1</maven-javadoc-plugin.version>
 		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
 
-		<lombok.version>1.16.16</lombok.version>
-		<netty.version>4.1.11.Final</netty.version>
-		<jackson.version>2.8.8</jackson.version>
+		<lombok.version>1.16.18</lombok.version>
+		<netty.version>4.1.14.Final</netty.version>
+		<jackson.version>2.9.0</jackson.version>
 
-		<guava.version>22.0</guava.version>
+		<guava.version>23.0</guava.version>
 
 		<log4j.version>2.8.2</log4j.version>
 
@@ -59,7 +59,7 @@
 		<awaitility.version>1.7.0</awaitility.version>
 		<cucumber.version>1.2.5</cucumber.version>
 		<guice.version>4.1.0</guice.version>
-		<commons-io.version>2.4</commons-io.version>
+		<commons-io.version>2.5</commons-io.version>
 	</properties>
 
 

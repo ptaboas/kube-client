@@ -1,5 +1,7 @@
 package com.simplyti.cloud.kube.client.reqs;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import io.netty.handler.codec.http.HttpMethod;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,6 +13,6 @@ public class KubernetesApiRequest {
 	private final HttpMethod method;
 	private final String uri;
 	private final Object body;
-	private final Class<?> responseClass;
+	private final TypeReference<?> responseClass;
 
 }

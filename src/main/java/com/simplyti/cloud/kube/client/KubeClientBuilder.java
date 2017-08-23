@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 
 public class KubeClientBuilder {
 	
@@ -16,6 +17,7 @@ public class KubeClientBuilder {
 	private static final Integer DEFAULT_UNSECURE_PORT = 8080;
 	private static final String SECURE_SCHEMA = "https";
 	private static final Integer DEFAULT_SECURE_PORT = 443;
+	private static final Address DEFAULT_SERVER_ADDRESS = new Address("kubernetes.default", DEFAULT_SECURE_PORT);
 	
 	private Address serverAddress;
 	private String caFile;
@@ -36,7 +38,9 @@ public class KubeClientBuilder {
 	}
 	
 	public  KubeClient build() {
-		return new  KubeClient(eventLoop,serverAddress,verbose,new SslContextProvider(caFile),new TokenProvider(tokenFile));
+		return new  KubeClient(Optional.ofNullable(eventLoop).orElseGet(NioEventLoopGroup::new),
+				Optional.ofNullable(serverAddress).orElse(DEFAULT_SERVER_ADDRESS),
+				verbose,new SslContextProvider(caFile),new TokenProvider(tokenFile));
 	}
 
 	public KubeClientBuilder verbose(boolean verbose) {

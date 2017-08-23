@@ -1,14 +1,19 @@
 package com.simplyti.cloud.kube.client.domain;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
-public class Namespace {
+public class Namespace extends KubernetesResource{
 	
-	private final String kind;
-	private final String apiVersion;
-	private final Metadata metadata;
-
+	@JsonCreator
+	public Namespace(
+			@JsonProperty("kind") String kind,
+			@JsonProperty("apiVersion") String apiVersion,
+			@JsonProperty("metadata") Metadata metadata){
+		super(kind,apiVersion,metadata);
+	}
+	
 }

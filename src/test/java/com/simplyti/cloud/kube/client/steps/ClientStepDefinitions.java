@@ -2,6 +2,8 @@ package com.simplyti.cloud.kube.client.steps;
 
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -14,12 +16,15 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.simplyti.cloud.kube.client.KubeClient;
 import com.simplyti.cloud.kube.client.KubeClientBuilder;
+import com.simplyti.cloud.kube.client.domain.KubernetesResource;
+import com.simplyti.cloud.kube.client.domain.ResourceList;
 import com.simplyti.cloud.kube.client.domain.Secret;
+import com.simplyti.cloud.kube.client.domain.Service;
 import com.simplyti.cloud.kube.client.domain.ServiceAccount;
-import com.simplyti.cloud.kube.client.domain.ServiceList;
 
 import cucumber.api.java.After;
 import cucumber.api.java.en.Given;
@@ -68,7 +73,7 @@ public class ClientStepDefinitions {
 	@Then("^I check that I get service list successfully using client \"([^\"]*)\"$")
 	public void iCheckThatIGetServiceListSuccessfully(String key) throws Throwable {
 		KubeClient client = (KubeClient) scenarioData.get(key);
-		Future<ServiceList> result = client.getServices().await();
+		Future<ResourceList<Service>> result = client.services().list().await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 	}
@@ -76,7 +81,7 @@ public class ClientStepDefinitions {
 	@When("^I try to retrieve service list \"([^\"]*)\" using client \"([^\"]*)\"$")
 	public void iTryToRetrieveServiceListUsingClient(String resultKey, String clientKey) throws Throwable {
 		KubeClient client = (KubeClient) scenarioData.get(clientKey);
-		Future<ServiceList> result = client.getServices().await();
+		Future<ResourceList<Service>> result = client.services().list().await();
 		scenarioData.put(resultKey, result);
 	}
 	
@@ -94,23 +99,32 @@ public class ClientStepDefinitions {
 	
 	@Given("^exist a service account CA certificate in file \"([^\"]*)\"$")
 	public void existAServiceAccountCACertificateInFile(String file) throws Throwable {
-		ServiceAccount serviceAccount = client.getServiceAccount("default", "default").await().getNow();
+		ServiceAccount serviceAccount = client.serviceaccounts().namespace("default").get("default").await().getNow();
 		String secretName = Iterables.getFirst(serviceAccount.getSecrets(), null).getName();
-		Secret secret = client.getSecret("default", secretName).await().getNow();
-		FileUtils.write(BUILD_DIR.resolve(file).toFile(), secret.getData().get("ca.crt"),CharsetUtil.UTF_8);
+		Secret secret = client.secrets().namespace("default").get( secretName).await().getNow();
+		FileUtils.write(BUILD_DIR.resolve(file).toFile(), secret.getData().get("ca.crt").getStringValue(),CharsetUtil.UTF_8);
 	}
 	
 	@Given("^exist a service account token in file \"([^\"]*)\"$")
 	public void existAServiceAccountTokenInFile(String file) throws Throwable {
-		ServiceAccount serviceAccount = client.getServiceAccount("default", "default").await().getNow();
+		ServiceAccount serviceAccount = client.namespace("default").serviceaccounts().get("default").await().getNow();
 		String secretName = Iterables.getFirst(serviceAccount.getSecrets(), null).getName();
-		Secret secret = client.getSecret("default", secretName).await().getNow();
-		FileUtils.write(BUILD_DIR.resolve(file).toFile(), secret.getData().get("token"),CharsetUtil.UTF_8);
+		Secret secret = client.secrets().namespace("default").get(secretName).await().getNow();
+		FileUtils.write(BUILD_DIR.resolve(file).toFile(), secret.getData().get("token").getStringValue(),CharsetUtil.UTF_8);
 	}
 	
 	@Given("^exist a service account token in file \"([^\"]*)\" with content \"([^\"]*)\"$")
 	public void existAServiceAccountTokenInFileWithContent(String file, String content) throws Throwable {
 		FileUtils.write(BUILD_DIR.resolve(file).toFile(), content, CharsetUtil.UTF_8);
+	}
+	
+	@Then("^I check that kubernetes rsource \"([^\"]*)\" contains labels \"([^\"]*)\"$")
+	public void iCheckThatKubernetesRsourceContainsLabel(String key, String labels) throws Throwable {
+		Map<String, String> labelsMap = Splitter.on(',').withKeyValueSeparator('=').split(labels);
+		KubernetesResource resource = (KubernetesResource) scenarioData.get(key);
+		assertThat(resource.getMetadata().getLabels(),notNullValue());
+		assertThat(resource.getMetadata().getLabels().entrySet(),hasSize(labelsMap.size()));
+		labelsMap.forEach((k,v)->assertThat(resource.getMetadata().getLabels(),hasEntry(k,v)));
 	}
 
 }

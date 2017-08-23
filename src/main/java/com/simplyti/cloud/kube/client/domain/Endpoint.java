@@ -11,9 +11,6 @@ import lombok.Getter;
 @Getter
 public class Endpoint extends KubernetesResource{
 	
-	public static final String KIND = "Endpoints";
-	public static final String API = "v1";
-	
 	private final Collection<Subset> subsets;
 	
 	@JsonCreator
