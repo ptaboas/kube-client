@@ -57,6 +57,22 @@ public class PodsStepDefinitions {
 		return result.getNow();
 	}
 	
+	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\" and image \"([^\"]*)\" and port (\\d+)$")
+	public Pod iCreateAPodInNamespaceWithNameandImageAndPort(String namespace, String name, String image,int port) throws Throwable {
+		Future<Pod> result = client.namespace(namespace).pods().builder()
+				.withName(name)
+				.withContainer()
+					.withImage(image)
+					.withPort()
+						.port(port)
+						.create()
+					.create()
+				.create().await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
+		return result.getNow();
+	}
+	
 
 	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\" and container images \"([^\"]*)\"$")
 	public void iCreateAPodInNamespaceWithNameAndContainerImages(String namespace, String name, List<String> images) throws Throwable {
@@ -170,7 +186,7 @@ public class PodsStepDefinitions {
 		await().pollInterval(1, TimeUnit.SECONDS).atMost(50,TimeUnit.SECONDS)
 		.until(()->client.pods().namespace(pod.getMetadata().getNamespace()).get(pod.getMetadata().getName()).await().getNow().getStatus().getPhase(),
 				equalTo(PodPhase.RUNNING));
-		
+		scenarioData.put(key, client.pods().namespace(pod.getMetadata().getNamespace()).get(pod.getMetadata().getName()).await().getNow());
 	}
 	
 	@Then("^I check that pod \"([^\"]*)\" is not ready$")
@@ -263,6 +279,18 @@ public class PodsStepDefinitions {
 			events.add(event);
 		});
 		scenarioData.put(key, events);
+	}
+	
+	@Then("^I check that pod \"([^\"]*)\" contains a not null status host ip$")
+	public void iCheckThatPodContainsANotNullStatusHostIp(String key) throws Throwable {
+		Pod pod = (Pod) scenarioData.get(key);
+		assertThat(pod.getStatus().getHostIP(),notNullValue());
+	}
+	
+	@Then("^I check that pod \"([^\"]*)\" contains a not null status pod ip$")
+	public void iCheckThatPodContainsANotNullStatusPodIp(String key) throws Throwable {
+		Pod pod = (Pod) scenarioData.get(key);
+		assertThat(pod.getStatus().getPodIP(),notNullValue());
 	}
 
 }

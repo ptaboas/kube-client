@@ -2,9 +2,11 @@ Feature: Pod operations
 
 Scenario: Create a Pod
 	Given a namespace "acceptance"
-	When I create a pod in namespace "acceptance" with name "test" and image "nginx"
+	When I create a pod in namespace "acceptance" with name "test" and image "nginx" and port 80
 	Then I check that exist a pod "#pod" with name "test" in namespace "acceptance"
 	And I check that pod "#pod" has "RUNNING" state
+	And I check that pod "#pod" contains a not null status host ip
+	And I check that pod "#pod" contains a not null status pod ip
 	
 Scenario: Update pod
 	Given a namespace "acceptance"

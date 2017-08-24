@@ -14,10 +14,6 @@ public abstract class Probe {
 	private final int initialDelaySeconds;
 	private final int periodSeconds;
 
-	public static Probe exec(Collection<String> command) {
-		return new CommandProbe(new ExecAction(command),1,1,1,1);
-	}
-
 	public static Probe exec(Collection<String> command, int failureThreshold, int successThreshold, int initialDelaySeconds , int periodSeconds) {
 		return new CommandProbe(new ExecAction(command),failureThreshold,successThreshold,initialDelaySeconds,periodSeconds);
 	}

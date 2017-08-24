@@ -52,17 +52,13 @@ public class KubernetesApiResponseHandler extends SimpleChannelInboundHandler<Ob
 			if(responseclass.getType().equals(String.class)){
 				future.setSuccess(content.readSlice(content.readableBytes()).toString(CharsetUtil.UTF_8));
 			}else{
-				if(msg instanceof HttpResponse){
-					HttpResponse httpResponse = (HttpResponse) msg;
-					if(httpResponse.status().equals(HttpResponseStatus.NOT_FOUND)){
-						future.setSuccess(null);
-					}else if (httpResponse.status().code()<300){
-						future.setSuccess(mapper.readValue((InputStream)new ByteBufInputStream(content), responseclass));
-					}else{
-						future.setFailure(new KubeClientErrorException(content.toString(CharsetUtil.UTF_8).trim(), httpResponse.status().code()));
-					}
-				}else{
+				HttpResponse httpResponse = (HttpResponse) msg;
+				if(httpResponse.status().equals(HttpResponseStatus.NOT_FOUND)){
+					future.setSuccess(null);
+				}else if (httpResponse.status().code()<300){
 					future.setSuccess(mapper.readValue((InputStream)new ByteBufInputStream(content), responseclass));
+				}else{
+					future.setFailure(new KubeClientErrorException(content.toString(CharsetUtil.UTF_8).trim(), httpResponse.status().code()));
 				}
 			}
 		}

@@ -8,7 +8,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ListMetadata {
 	
-	private final String selfLink;
 	private final String resourceVersion;
 
 }
