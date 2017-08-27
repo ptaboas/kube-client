@@ -39,7 +39,7 @@ public class KubeChannelPoolHandler extends AbstractChannelPoolHandler {
 	public KubeChannelPoolHandler(String remoteHost, boolean verbose, Supplier<SslContext> sslContextProvider,
 			Supplier<String> tokenProvider){
 		KubeObjectMapper mapper = new KubeObjectMapper();
-		kubernetesApiRequestEncoder = new KubernetesApiRequestEncoder(remoteHost,mapper);
+		kubernetesApiRequestEncoder = new KubernetesApiRequestEncoder(mapper,remoteHost);
 		kubernetesCommandExecEncoder = new KubernetesCommandExecEncoder(remoteHost);
 		kubernetesApiResponseHandler = new KubernetesApiResponseHandler(mapper);
 		kubernetesCommandExecResponseHandler = new KubernetesCommandExecResponseHandler(verbose);

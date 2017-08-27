@@ -20,10 +20,10 @@ import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.AttributeKey;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Sharable
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class KubernetesApiRequestEncoder extends MessageToMessageEncoder<KubernetesApiRequest>{
 	
 	public static final AttributeKey<TypeReference<?>> RESPONSE_CLASS = AttributeKey.valueOf("responseClass");
@@ -32,11 +32,6 @@ public class KubernetesApiRequestEncoder extends MessageToMessageEncoder<Kuberne
 
 	private final String remoteHost;
 	
-	public KubernetesApiRequestEncoder(String remoteHost,KubeObjectMapper mapper) {
-		this.remoteHost=remoteHost;
-		this.mapper=mapper;
-	}
-
 	
 	@Override
 	protected void encode(ChannelHandlerContext ctx, KubernetesApiRequest msg, List<Object> out) throws Exception {

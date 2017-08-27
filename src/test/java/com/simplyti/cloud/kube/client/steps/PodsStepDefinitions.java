@@ -68,6 +68,7 @@ public class PodsStepDefinitions {
 					.withImage(image)
 					.withPort()
 						.port(port)
+						.name("default")
 						.create()
 					.create()
 				.create().await();
