@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.simplyti.cloud.kube.client.KubeClient;
 import com.simplyti.cloud.kube.client.domain.Event;
+import com.simplyti.cloud.kube.client.domain.HttpHeader;
 import com.simplyti.cloud.kube.client.domain.HttpProbe;
 import com.simplyti.cloud.kube.client.domain.Pod;
 import com.simplyti.cloud.kube.client.domain.PodPhase;
@@ -34,6 +36,7 @@ import com.simplyti.cloud.kube.client.pods.PodUpdater;
 
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.util.concurrent.Future;
 
 public class PodsStepDefinitions {
@@ -113,7 +116,7 @@ public class PodsStepDefinitions {
 				.withName(name)
 				.withContainer()
 					.withImage(image)
-					.withReadinessProbe(Probe.http(httpPath,port,1,1,1,1))
+					.withReadinessProbe(Probe.http(httpPath,port,1,1,1,1,Collections.singleton(new HttpHeader(HttpHeaderNames.USER_AGENT,"test"))))
 					.create()
 				.create().await();
 		assertTrue(result.isSuccess());

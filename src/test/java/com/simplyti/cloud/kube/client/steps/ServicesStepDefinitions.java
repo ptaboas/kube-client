@@ -258,11 +258,10 @@ public class ServicesStepDefinitions {
 		scenarioData.put(key, events);
 	}
 	
-	@When("^I observe services in namespace \"([^\"]*)\" from index in resource list \"([^\"]*)\" storing events in \"([^\"]*)\"$")
-	public void iObserveServicesInNamespaceFromIndexInResourceListStoringEventsIn(String namespace, String listkey, String key) throws Throwable {
-		ResourceList<?> list = (ResourceList<?>) scenarioData.get(listkey);
+	@When("^I observe services in namespace \"([^\"]*)\" storing events in \"([^\"]*)\"$")
+	public void iObserveServicesInNamespaceStoringEventsIn(String namespace, String key) throws Throwable {
 		Set<Event<Service>> events = Sets.newConcurrentHashSet();
-		client.services().watch(list.getMetadata().getResourceVersion()).onEvent(event->{
+		client.services().namespace(namespace).watch().onEvent(event->{
 			events.add(event);
 		});
 		scenarioData.put(key, events);

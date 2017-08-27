@@ -77,12 +77,9 @@ Scenario: Observe services
 	And I delete service "#service1"
 	Then I check that observed events "#services" contains the "DELETED" event of "#service1"
 	
-Scenario: Observe list of service in namespace from given index
+Scenario: Observe list of service in namespace
 	Given a namespace "acceptance"
-	When I create a service in namespace "acceptance" with name "test" and port 80
-	Then I check that exist a service "#service" with name "test" in namespace "acceptance"
-	When I get services "#services" in namespace "acceptance"
-	And I observe services in namespace "acceptance" from index in resource list "#services" storing events in "#events"
+	When I observe services in namespace "acceptance" storing events in "#events"
 	And I create a service "#service1" in namespace "acceptance" with name "other" and port 80
 	Then I check that observed events "#events" contains the "ADDED" event of "#service1"
 	

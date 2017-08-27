@@ -19,7 +19,11 @@ public abstract class Probe {
 	}
 
 	public static Probe http(String path, int port, int failureThreshold, int successThreshold, int initialDelaySeconds , int periodSeconds) {
-		return new HttpProbe(new HttpGet(path, port, null), failureThreshold, successThreshold, initialDelaySeconds, periodSeconds);
+		return http(path,port,failureThreshold,successThreshold,initialDelaySeconds,periodSeconds,null);
+	}
+
+	public static Probe http(String path, int port, int failureThreshold, int successThreshold, int initialDelaySeconds , int periodSeconds,Collection<HttpHeader> headers) {
+		return new HttpProbe(new HttpGet(path, port, headers), failureThreshold, successThreshold, initialDelaySeconds, periodSeconds);
 	}
 
 	public static Probe tcp(int port, int failureThreshold, int successThreshold, int initialDelaySeconds , int periodSeconds) {
