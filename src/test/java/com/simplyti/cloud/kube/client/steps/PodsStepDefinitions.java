@@ -117,7 +117,7 @@ public class PodsStepDefinitions {
 				.withName(name)
 				.withContainer()
 					.withImage(image)
-					.withReadinessProbe(Probe.http(httpPath,port,1,1,1,1,Collections.singleton(new HttpHeader(HttpHeaderNames.USER_AGENT,"test"))))
+					.withReadinessProbe(Probe.http(httpPath,port,1,1,1,1,Collections.singleton(new HttpHeader(HttpHeaderNames.USER_AGENT.toString(),"test"))))
 					.create()
 				.create().await();
 		assertTrue(result.isSuccess());

@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class HttpHeader {
 	
-	private final CharSequence name;
-	private final CharSequence value;
+	private final String name;
+	private final String value;
 
 }
