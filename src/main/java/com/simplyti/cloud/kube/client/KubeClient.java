@@ -22,10 +22,6 @@ import io.netty.util.concurrent.Future;
 
 public class KubeClient {
 	
-	public static KubeClientBuilder builder() {
-		return new KubeClientBuilder();
-	}
-
 	private final InternalClient internalClient;
 	private final DefaultPodsApi pods;
 	private final DefaultServicesApi services;
@@ -79,6 +75,10 @@ public class KubeClient {
 
 	public NamespacedClient namespace(String namespace) {
 		return new NamespacedClient(internalClient,namespace,services,pods,endpoints,secrets,serviceaccounts);
+	}
+	
+	public static KubeClientBuilder builder() {
+		return new KubeClientBuilder();
 	}
 
 }
