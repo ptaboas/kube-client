@@ -48,10 +48,6 @@ public class KubeClient {
 	public Future<String> health() {
 		return this.internalClient.sendRequest(new GetHealthRequest());
 	}
-
-//	public Future<Service> updateService(Service service) {
-//		return this.internalClient.sendRequest(new UpdateServiceRequest(service));
-//	}
 	
 	public PodsApi pods() {
 		return pods;
