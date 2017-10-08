@@ -1,6 +1,8 @@
 package com.simplyti.cloud.kube.client;
 
 
+import java.nio.channels.ClosedChannelException;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.simplyti.cloud.kube.client.coder.KubeApiEventChunkDecoder;
@@ -52,6 +54,11 @@ public class KubeChannelPoolHandler extends AbstractChannelPoolHandler {
 
 	@Override
 	public void channelCreated(Channel ch) throws Exception {
+		ch.closeFuture().addListener(futureClose->{
+			Optional.ofNullable(ch.attr(InternalClient.SINGLE_RESPONSE_PROMISE).get())
+				.ifPresent(currentPromise->currentPromise.tryFailure(new ClosedChannelException()));
+		});
+		
 		SslContext sslContext = sslContextProvider.get();
 		if(sslContext!=null){
 			ch.pipeline().addLast(sslContext.newHandler(ch.alloc()));

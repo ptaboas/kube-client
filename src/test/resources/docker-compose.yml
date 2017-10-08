@@ -63,7 +63,7 @@ services:
     - kube-data:/var/run/kubernetes:ro
     
   kubelet:
-    image: gcr.io/google_containers/hyperkube:v1.6.4
+    image: gcr.io/google_containers/hyperkube:v1.7.8
     restart: on-failure
     command:
     - /hyperkube

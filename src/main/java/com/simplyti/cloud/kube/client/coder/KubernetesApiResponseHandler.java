@@ -71,11 +71,5 @@ public class KubernetesApiResponseHandler extends SimpleChannelInboundHandler<Ob
 		}
 		return false;
 	}
-	
-	@Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception {
-		ctx.channel().attr(InternalClient.SINGLE_RESPONSE_PROMISE).get().tryFailure(cause);
-    }
 
 }

@@ -79,8 +79,7 @@ public class InternalClient {
 				}
 			});
 			channel.attr(SINGLE_RESPONSE_PROMISE).set(promise);
-			channel.closeFuture().addListener(f->channel.pipeline().fireExceptionCaught(new ClosedChannelException()));
-			channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+			channel.writeAndFlush(request);
 		}));
 		return promise;
 	}
