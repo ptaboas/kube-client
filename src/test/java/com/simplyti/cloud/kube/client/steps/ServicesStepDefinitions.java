@@ -53,7 +53,7 @@ public class ServicesStepDefinitions {
 	
 	@Before
 	public void health(){
-		await().atMost(60,TimeUnit.SECONDS).until(()->{
+		await().atMost(2,TimeUnit.MINUTES).until(()->{
 			try {
 				return client.health().await().get().equals("ok");
 			} catch (Exception e) {
