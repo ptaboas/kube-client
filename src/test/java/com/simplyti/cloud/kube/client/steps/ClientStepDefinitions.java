@@ -1,6 +1,7 @@
 package com.simplyti.cloud.kube.client.steps;
 
 import static org.hamcrest.Matchers.notNullValue;
+import static com.jayway.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
@@ -11,6 +12,7 @@ import static org.junit.Assert.assertFalse;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -99,6 +101,7 @@ public class ClientStepDefinitions {
 	
 	@Given("^exist a service account CA certificate in file \"([^\"]*)\"$")
 	public void existAServiceAccountCACertificateInFile(String file) throws Throwable {
+		await().atMost(10,TimeUnit.SECONDS).until(()->client.serviceaccounts().namespace("default").get("default").await().getNow()!=null);
 		ServiceAccount serviceAccount = client.serviceaccounts().namespace("default").get("default").await().getNow();
 		String secretName = Iterables.getFirst(serviceAccount.getSecrets(), null).getName();
 		Secret secret = client.secrets().namespace("default").get( secretName).await().getNow();

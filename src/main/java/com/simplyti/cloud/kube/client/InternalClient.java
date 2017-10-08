@@ -1,5 +1,6 @@
 package com.simplyti.cloud.kube.client;
 
+import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -13,6 +14,7 @@ import com.simplyti.cloud.kube.client.reqs.KubernetesWatchApiRequest;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
@@ -77,7 +79,8 @@ public class InternalClient {
 				}
 			});
 			channel.attr(SINGLE_RESPONSE_PROMISE).set(promise);
-			channel.writeAndFlush(request);
+			channel.closeFuture().addListener(f->channel.pipeline().fireExceptionCaught(new ClosedChannelException()));
+			channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 		}));
 		return promise;
 	}

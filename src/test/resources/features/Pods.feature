@@ -8,6 +8,15 @@ Scenario: Create a Pod
 	And I check that pod "#pod" contains a not null status host ip
 	And I check that pod "#pod" contains a not null status pod ip
 	
+Scenario: Create a Pod with labels
+	Given a namespace "acceptance"
+	When I create a pod in namespace "acceptance" with name "test", image "nginx", port 80 and labels "app=test,version=1,check=true"
+	Then I check that exist a pod "#pod" with name "test" in namespace "acceptance"
+	And I check that pod "#pod" has "RUNNING" state
+	And I check that pod "#pod" contains a not null status host ip
+	And I check that pod "#pod" contains a not null status pod ip
+	And I check that kubernetes rsource "#pod" contains labels "app=test,version=1,check=true"
+	
 Scenario: Update pod
 	Given a namespace "acceptance"
 	When I create a pod in namespace "acceptance" with name "test" and image "nginx"

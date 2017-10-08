@@ -1,6 +1,9 @@
 package com.simplyti.cloud.kube.client.namespaces;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Maps;
 import com.simplyti.cloud.kube.client.CreationBuilder;
 import com.simplyti.cloud.kube.client.InternalClient;
 import com.simplyti.cloud.kube.client.domain.Metadata;
@@ -20,6 +23,7 @@ public class NamespaceCreationBuilder implements CreationBuilder<Namespace> {
 	private final InternalClient client;
 	
 	private String name;
+	private Map<String,String> labels;
 	
 	public NamespaceCreationBuilder(InternalClient client){
 		this.client=client;
@@ -33,8 +37,17 @@ public class NamespaceCreationBuilder implements CreationBuilder<Namespace> {
 
 	@Override
 	public Future<Namespace> create() {
-		Namespace namespace = new Namespace(KIND, API, Metadata.builder().name(name).build());
+		Namespace namespace = new Namespace(KIND, API, Metadata.builder().name(name).labels(labels).build());
 		return client.sendRequest(new KubernetesApiRequest(HttpMethod.POST, "/api/v1/namespaces",namespace,TYPE));
+	}
+
+	@Override
+	public CreationBuilder<Namespace> addLabel(String name,String value) {
+		if(labels==null){
+			labels=Maps.newHashMap();
+		}
+		labels.put(name, value);
+		return this;
 	}
 
 }

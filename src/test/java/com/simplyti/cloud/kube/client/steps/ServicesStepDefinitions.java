@@ -14,8 +14,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,24 +31,20 @@ import com.simplyti.cloud.kube.client.KubeClient;
 import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.EventType;
 import com.simplyti.cloud.kube.client.domain.KubernetesResource;
-import com.simplyti.cloud.kube.client.domain.Namespace;
 import com.simplyti.cloud.kube.client.domain.ResourceList;
 import com.simplyti.cloud.kube.client.domain.Service;
 import com.simplyti.cloud.kube.client.domain.ServicePort;
 import com.simplyti.cloud.kube.client.domain.ServiceProtocol;
 import com.simplyti.cloud.kube.client.services.DefaultServiceCreationBuilder;
+import com.simplyti.cloud.kube.client.services.ServicePortCreationBuilder;
 
-import cucumber.api.java.After;
 import cucumber.api.java.Before;
-import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.netty.util.concurrent.Future;
 
 public class ServicesStepDefinitions {
 	
-	private static final String CREATED_NAMESPACES = "_CREATED_NAMESPACES_";
-
 	@Inject
 	private KubeClient client;
 	
@@ -59,41 +53,13 @@ public class ServicesStepDefinitions {
 	
 	@Before
 	public void health(){
-		await().atMost(10,TimeUnit.SECONDS).until(()->client.health().await().getNow().equals("ok"));
-	}
-	
-	
-	@SuppressWarnings("unchecked")
-	@Given("^a namespace \"([^\"]*)\"$")
-	public void aNamespace(String name) throws Throwable {
-		Future<Namespace> result = client.namespaces().builder().withName(name).create().await();
-		assertTrue(result.isSuccess());
-		assertThat(result.getNow(),notNullValue());
-		if(scenarioData.containsKey(CREATED_NAMESPACES)){
-			((List<String>)scenarioData.get(CREATED_NAMESPACES)).add(name);
-		}else{
-			List<String> namespaces = new ArrayList<>();
-			namespaces.add(name);
-			scenarioData.put(CREATED_NAMESPACES, namespaces);
-		}
-	}
-	
-	@When("^I create a namespace \"([^\"]*)\"$")
-	public void iCreateANamespace(String name) throws Throwable {
-		aNamespace(name);
-	}
-	
-	@After
-	public void deleteNamespaces() throws InterruptedException{
-		if(scenarioData.containsKey(CREATED_NAMESPACES)){
-			@SuppressWarnings("unchecked")
-			List<String> namespaces = ((List<String>)scenarioData.get(CREATED_NAMESPACES));
-			namespaces.forEach(client.namespaces()::delete);
-			
-			await().pollInterval(1, TimeUnit.SECONDS).atMost(30,TimeUnit.SECONDS)
-				.until(()->client.namespaces().list().await().getNow().getItems().stream()
-						.noneMatch(namespace->namespaces.contains(namespace.getMetadata().getName())));
-		}
+		await().atMost(60,TimeUnit.SECONDS).until(()->{
+			try {
+				return client.health().await().get().equals("ok");
+			} catch (Exception e) {
+				return false;
+			}
+		});
 	}
 	
 	@When("^I create a service in namespace \"([^\"]*)\" with name \"([^\"]*)\" and port (\\d+)$")
@@ -185,23 +151,29 @@ public class ServicesStepDefinitions {
 	
 	@When("^I create a service in namespace \"([^\"]*)\" with name \"([^\"]*)\" and next ports:$")
 	public void iCreateAServiceInNamespaceWithNameAndNextPorts(String namespace, String name, List<Map<String,String>> ports) throws Throwable {
-		Future<Service> result = client.namespace(namespace).services().builder()
-				.withName(name)
-				.withPorts(ports(ports))
-				.create().await();
+		DefaultServiceCreationBuilder builder = client.namespace(namespace).services().builder()
+				.withName(name);
+		
+		ports.forEach(portData->{
+			ServicePortCreationBuilder<DefaultServiceCreationBuilder> portBuilder = builder.withPort();
+			portBuilder.port(Integer.parseInt(portData.get("port")));
+			if(portData.containsKey("name")){
+				portBuilder.name(portData.get("name"));
+			}
+			if(portData.containsKey("protocol")){
+				portBuilder.protocol(ServiceProtocol.valueOf(portData.get("protocol")));
+			}
+			if(portData.containsKey("targetPort")){
+				portBuilder.targetPort(portData.get("targetPort"));
+			}
+			portBuilder.create();
+		});
+		
+		Future<Service> result = builder.create().await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
 	}
 	
-	private Collection<ServicePort> ports(List<Map<String, String>> ports) {
-		return ports.stream().map(portData->{
-			return new ServicePort(portData.get("name"), 
-					Integer.parseInt(portData.get("port")), 
-					portData.containsKey("protocol")?ServiceProtocol.valueOf(portData.get("protocol")):null, 
-					(portData.containsKey("targetPort") && portData.get("targetPort").chars().allMatch( Character::isDigit ))?Integer.parseInt(portData.get("targetPort")):portData.get("targetPort"));
-		}).collect(Collectors.toList());
-	}
-
 	@Then("^I check that service \"([^\"]*)\" contains selectors \"([^\"]*)\"$")
 	public void iCheckThatServiceContainsSelectors(String key, String selectors) throws Throwable {
 		Map<String, String> selectorsMap = Splitter.on(',').withKeyValueSeparator('=').split(selectors);

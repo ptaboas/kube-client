@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 services:
 
@@ -20,7 +20,7 @@ services:
     - 2379:2379
     
   apiserver:
-    image: gcr.io/google_containers/hyperkube:v1.6.4
+    image: gcr.io/google_containers/hyperkube:v1.7.8
     restart: on-failure
     command:
     - /hyperkube
@@ -29,19 +29,17 @@ services:
     - --service-cluster-ip-range=10.10.0.0/16
     - --etcd-servers=http://etcd:2379
     - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
-    - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
-    - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
-    - --client-ca-file=/etc/kubernetes/ssl/ca.pem
-    - --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+    - --client-ca-file=/var/run/kubernetes/apiserver.crt
+    - --service-account-key-file=/var/run/kubernetes/apiserver.key
     - --v=1
     ports:
     - 8080:8080
     - 443:6443
     volumes:
-    - ${project.build.directory}/test-classes/kubernetes-ssl:/etc/kubernetes/ssl:ro
+    - kube-data:/var/run/kubernetes:rw
     
   scheduler:
-    image: gcr.io/google_containers/hyperkube:v1.6.4
+    image: gcr.io/google_containers/hyperkube:v1.7.8
     restart: on-failure
     command:
     - /hyperkube
@@ -51,18 +49,18 @@ services:
     - --v=1
 
   controller-manager:
-    image: gcr.io/google_containers/hyperkube:v1.6.4
+    image: gcr.io/google_containers/hyperkube:v1.7.8
     restart: on-failure
     command:
     - /hyperkube
     - controller-manager
     - --master=http://apiserver:8080
     - --leader-elect=true
-    - --root-ca-file=/etc/kubernetes/ssl/ca.pem
-    - --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+    - --root-ca-file=/var/run/kubernetes/apiserver.crt
+    - --service-account-private-key-file=/var/run/kubernetes/apiserver.key
     - --v=1
     volumes:
-    - ${project.build.directory}/test-classes/kubernetes-ssl:/etc/kubernetes/ssl:ro
+    - kube-data:/var/run/kubernetes:ro
     
   kubelet:
     image: gcr.io/google_containers/hyperkube:v1.6.4
@@ -87,3 +85,6 @@ services:
     - /var/lib/kubelet:/var/lib/kubelet:rw
     - /dev:/dev
     privileged: true
+    
+volumes:
+  kube-data:

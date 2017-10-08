@@ -77,6 +77,23 @@ public class PodsStepDefinitions {
 		return result.getNow();
 	}
 	
+	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\", image \"([^\"]*)\", port (\\d+) and labels \"([^\"]*)\"$")
+	public void iCreateAPodInNamespaceWithNameImagePortAndLabels(String namespace, String name, String image, int port, String labels) throws Throwable {
+		Map<String, String> labelsMap = Splitter.on(',').withKeyValueSeparator('=').split(labels);
+		PodCreationBuilder builder = client.namespace(namespace).pods().builder()
+				.withName(name);
+		labelsMap.forEach((k,v)->builder.addLabel(k, v));
+		Future<Pod> result = builder.withContainer()
+				.withImage(image)
+				.withPort()
+					.port(port)
+					.name("default")
+					.create()
+				.create()
+			.create().await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
+	}
 
 	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\" and container images \"([^\"]*)\"$")
 	public void iCreateAPodInNamespaceWithNameAndContainerImages(String namespace, String name, List<String> images) throws Throwable {

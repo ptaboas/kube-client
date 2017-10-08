@@ -23,10 +23,10 @@ Scenario: Create simple service with selectors
 Scenario: Create service with multiple ports
 	Given a namespace "acceptance"
 	When I create a service in namespace "acceptance" with name "test" and next ports:
-		| port	| protocol	| name	|
-		| 80  	| TCP	 	| http	|
-		| 443	| TCP		| https	|
-		| 53	| UDP		| dns	|
+		| port	| protocol	| name	| targetPort	|
+		| 80  	| TCP	 	| http	| http			|
+		| 443	| TCP		| https	| https			|
+		| 53	| UDP		| dns	| dns			|
 	Then I check that exist a service "#service" with name "test" in namespace "acceptance"
 	And I check that service "#service" has next ports:
 	  | port	| protocol	|
