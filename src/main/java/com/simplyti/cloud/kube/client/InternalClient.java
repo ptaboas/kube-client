@@ -79,7 +79,7 @@ public class InternalClient {
 			channel.attr(SINGLE_RESPONSE_PROMISE).set(promise);
 			channel.writeAndFlush(request).addListener(writeFuture->{
 				if(!writeFuture.isSuccess()){
-					promise.setFailure(writeFuture.cause());
+					promise.tryFailure(writeFuture.cause());
 				}
 			});
 		}));
