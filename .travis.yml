@@ -21,13 +21,7 @@ script:
 - mvn verify && bash <(curl -s https://codecov.io/bash)
 
 deploy:
-  -
-    provider: script
+  - provider: script
     script: .travis/deploy.sh
-    on:
-      branch: develop
-  -
-    provider: script
-    script: .travis/release.sh
     on:
       branch: master
