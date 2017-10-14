@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-openssl aes-256-cbc -K $encrypted_fd725cdc679b_key -iv $encrypted_fd725cdc679b_iv -in ./.travis/codesigning.asc.enc -out codesigning.asc -d
+openssl aes-256-cbc -K $encrypted_85c50a6b4452_key -iv $encrypted_85c50a6b4452_iv -in ./.travis/codesigning.asc.enc -out codesigning.asc -d
 gpg --fast-import codesigning.asc
 
 VERSION=$(echo "$TRAVIS_TAG" | sed 's/^v//g')
