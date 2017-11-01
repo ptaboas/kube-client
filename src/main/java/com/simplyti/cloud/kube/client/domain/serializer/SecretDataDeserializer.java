@@ -29,15 +29,7 @@ public class SecretDataDeserializer extends StdDeserializer<SecretData>{
 	@Override
 	public SecretData deserialize(JsonParser jp, DeserializationContext ctxt)
 			throws IOException, JsonProcessingException {
-//		Builder<String, String> builder = ImmutableMap.<String, String>builder();
-//		jp.currentToken();
-//		while(jp.nextToken() != JsonToken.END_OBJECT){
-//			String key = jp.getCurrentName();
-//			jp.nextToken();
-//			String value = new String(Base64.getDecoder().decode(jp.getText().getBytes(CharsetUtil.UTF_8)),CharsetUtil.UTF_8);
-//			builder.put(key,value);
-//		}
-		return new SecretData(new String(Base64.getDecoder().decode(jp.getText().getBytes(CharsetUtil.UTF_8)),CharsetUtil.UTF_8));
+		return new SecretData(Base64.getDecoder().decode(jp.getText().getBytes(CharsetUtil.UTF_8)));
 	}
     
 

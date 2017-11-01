@@ -11,6 +11,7 @@ import com.simplyti.cloud.kube.client.domain.Metadata;
 import com.simplyti.cloud.kube.client.domain.Service;
 import com.simplyti.cloud.kube.client.domain.ServicePort;
 import com.simplyti.cloud.kube.client.domain.ServiceSpec;
+import com.simplyti.cloud.kube.client.domain.ServiceType;
 
 public class DefaultServiceCreationBuilder extends AbstractCreationBuilder<Service,DefaultServiceCreationBuilder> implements ServiceCreationBuilder<DefaultServiceCreationBuilder>{
 
@@ -19,6 +20,7 @@ public class DefaultServiceCreationBuilder extends AbstractCreationBuilder<Servi
 	
 	private final List<ServicePort> servicePorts;
 	private final ImmutableMap.Builder<String, String> selectorBuilder = ImmutableMap.<String,String>builder();
+	private ServiceType type;
 
 	public DefaultServiceCreationBuilder(InternalClient client,String namespace, String resourceName) {
 		super(client,namespace,resourceName);
@@ -32,6 +34,7 @@ public class DefaultServiceCreationBuilder extends AbstractCreationBuilder<Servi
 				ServiceSpec.builder()
 				.ports(servicePorts)
 				.selector(selectorBuilder.build())
+				.type(type)
 				.build());
 	}
 	
@@ -51,6 +54,11 @@ public class DefaultServiceCreationBuilder extends AbstractCreationBuilder<Servi
 
 	public DefaultServiceCreationBuilder withPorts(Collection<ServicePort> ports) {
 		this.servicePorts.addAll(ports);
+		return this;
+	}
+	
+	public DefaultServiceCreationBuilder withType(ServiceType type) {
+		this.type=type;
 		return this;
 	}
 

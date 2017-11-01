@@ -1,16 +1,21 @@
 package com.simplyti.cloud.kube.client.domain;
 
-import lombok.AllArgsConstructor;
+import io.netty.util.CharsetUtil;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
+@Getter
 @EqualsAndHashCode
-@AllArgsConstructor
 public class SecretData {
 
-	private final String value;
+	private final byte[] data;
+	
+	public SecretData(byte[] data) {
+		this.data=data;
+	}
 
-	public String getStringValue() {
-		return value;
+	public SecretData of(String strData){
+		return new SecretData(strData.getBytes(CharsetUtil.UTF_8));
 	}
 
 }

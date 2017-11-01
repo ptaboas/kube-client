@@ -4,7 +4,7 @@
 
 	<groupId>com.simplyti.cloud</groupId>
 	<artifactId>kube-client</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 
 	<name>Kubernetes client</name>
 	<description>Kubernetes api server client</description>

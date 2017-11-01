@@ -97,8 +97,8 @@ public class InternalClient {
 		pool.acquire().addListener(future->{
 			if(future.isSuccess()){
 				Channel channel = (Channel) future.get();
-				observable.setChannel(channel,ob->this.observe0(ob,reqSupplier));
 				channel.attr(OBSERVABLE_RESPONSE).set(observable);
+				observable.setChannel(channel,ob->this.observe0(ob,reqSupplier));
 				channel.writeAndFlush(reqSupplier.apply(observable.index()));
 			}else{
 				log.error("Error observing: {}",(Object)future.cause());

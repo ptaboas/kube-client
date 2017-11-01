@@ -106,7 +106,7 @@ public class ClientStepDefinitions {
 		ServiceAccount serviceAccount = client.serviceaccounts().namespace("default").get("default").await().getNow();
 		String secretName = Iterables.getFirst(serviceAccount.getSecrets(), null).getName();
 		Secret secret = client.secrets().namespace("default").get( secretName).await().getNow();
-		FileUtils.write(BUILD_DIR.resolve(file).toFile(), secret.getData().get("ca.crt").getStringValue(),CharsetUtil.UTF_8);
+		FileUtils.writeByteArrayToFile(BUILD_DIR.resolve(file).toFile(), secret.getData().get("ca.crt").getData());
 	}
 	
 	@Given("^exist a service account token in file \"([^\"]*)\"$")
@@ -114,7 +114,7 @@ public class ClientStepDefinitions {
 		ServiceAccount serviceAccount = client.namespace("default").serviceaccounts().get("default").await().getNow();
 		String secretName = Iterables.getFirst(serviceAccount.getSecrets(), null).getName();
 		Secret secret = client.secrets().namespace("default").get(secretName).await().getNow();
-		FileUtils.write(BUILD_DIR.resolve(file).toFile(), secret.getData().get("token").getStringValue(),CharsetUtil.UTF_8);
+		FileUtils.writeByteArrayToFile(BUILD_DIR.resolve(file).toFile(), secret.getData().get("token").getData());
 	}
 	
 	@Given("^exist a service account token in file \"([^\"]*)\" with content \"([^\"]*)\"$")

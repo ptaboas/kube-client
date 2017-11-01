@@ -25,11 +25,13 @@ public class KubeClientBuilder {
 	private boolean verbose;
 	private EventLoopGroup eventLoop;
 
+	private boolean secured;
+
 	public KubeClientBuilder server(String url) {
 		Matcher matcher = URL.matcher(url);
 		checkArgument(matcher.matches());
 		String schema = Optional.ofNullable(matcher.group(1)).orElse(UNSECURE_SCHEMA);
-		boolean secured = schema.equals(SECURE_SCHEMA);
+		this.secured = schema.equals(SECURE_SCHEMA);
 		String host = matcher.group(3);
 		Integer port = Optional.ofNullable(matcher.group(4)).map(Integer::parseInt)
 				.orElse(secured?DEFAULT_SECURE_PORT:DEFAULT_UNSECURE_PORT);
@@ -40,7 +42,7 @@ public class KubeClientBuilder {
 	public  KubeClient build() {
 		return new  KubeClient(Optional.ofNullable(eventLoop).orElseGet(NioEventLoopGroup::new),
 				Optional.ofNullable(serverAddress).orElse(DEFAULT_SERVER_ADDRESS),
-				verbose,new SslContextProvider(caFile),new TokenProvider(tokenFile));
+				verbose,new SslContextProvider(secured,caFile),new TokenProvider(tokenFile));
 	}
 
 	public KubeClientBuilder verbose(boolean verbose) {

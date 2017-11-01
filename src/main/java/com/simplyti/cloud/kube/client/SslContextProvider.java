@@ -28,7 +28,10 @@ public class SslContextProvider implements Supplier<SslContext>{
 	
 	private SslContext sslCtx=null;
 
-	public SslContextProvider(String caFile) {
+	public SslContextProvider(boolean secured, String caFile) {
+		if(!secured){
+			return;
+		}
 		Path path = Paths.get(MoreObjects.firstNonNull(caFile, DEFAULT_CA_FILE));
 		if(Files.exists(path)){
 			InputStream inputStream = null;

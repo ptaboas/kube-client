@@ -15,6 +15,7 @@ public class ServiceSpec {
 	private final String clusterIP;
 	private final Collection<ServicePort> ports;
 	private final Map<String,String> selector;
+	private final ServiceType type;
 	
 
 }
