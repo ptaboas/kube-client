@@ -74,6 +74,8 @@ services:
     - --kubeconfig=${project.build.testOutputDirectory}/kubelet/kubeconfig
     - --fail-swap-on=false
     - --root-dir=${project.build.testOutputDirectory}/kubelet
+    - --cgroups-per-qos=false
+    - --enforce-node-allocatable=
     - --v=1
     volumes:
     - ${project.build.testOutputDirectory}/kubelet:${project.build.testOutputDirectory}/kubelet:rw
