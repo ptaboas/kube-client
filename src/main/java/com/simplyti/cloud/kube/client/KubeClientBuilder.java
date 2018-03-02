@@ -17,9 +17,10 @@ public class KubeClientBuilder {
 	private static final Integer DEFAULT_UNSECURE_PORT = 8080;
 	private static final String SECURE_SCHEMA = "https";
 	private static final Integer DEFAULT_SECURE_PORT = 443;
-	private static final Address DEFAULT_SERVER_ADDRESS = new Address("kubernetes.default", DEFAULT_SECURE_PORT);
+	private static final ApiServer DEFAULT_SERVER_ADDRESS = new ApiServer("kubernetes.default", DEFAULT_SECURE_PORT,new SslContextProvider(false,null));
 	
-	private Address serverAddress;
+	private String host;
+	private Integer port;
 	private String caFile;
 	private String tokenFile;
 	private boolean verbose;
@@ -32,17 +33,20 @@ public class KubeClientBuilder {
 		checkArgument(matcher.matches());
 		String schema = Optional.ofNullable(matcher.group(1)).orElse(UNSECURE_SCHEMA);
 		this.secured = schema.equals(SECURE_SCHEMA);
-		String host = matcher.group(3);
-		Integer port = Optional.ofNullable(matcher.group(4)).map(Integer::parseInt)
+		this.host = matcher.group(3);
+		this.port = Optional.ofNullable(matcher.group(4)).map(Integer::parseInt)
 				.orElse(secured?DEFAULT_SECURE_PORT:DEFAULT_UNSECURE_PORT);
-		this.serverAddress = new Address(host,port);
 		return this;
 	}
 	
 	public  KubeClient build() {
 		return new  KubeClient(Optional.ofNullable(eventLoop).orElseGet(NioEventLoopGroup::new),
-				Optional.ofNullable(serverAddress).orElse(DEFAULT_SERVER_ADDRESS),
-				verbose,new SslContextProvider(secured,caFile),new TokenProvider(tokenFile));
+				apiServer(),verbose,new TokenProvider(tokenFile));
+	}
+
+	private ApiServer apiServer() {
+		return Optional.ofNullable(host).map(h->new ApiServer(h,port,new SslContextProvider(secured,caFile)))
+			.orElse(DEFAULT_SERVER_ADDRESS);
 	}
 
 	public KubeClientBuilder verbose(boolean verbose) {

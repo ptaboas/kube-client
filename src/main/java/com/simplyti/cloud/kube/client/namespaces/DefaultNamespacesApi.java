@@ -1,6 +1,6 @@
 package com.simplyti.cloud.kube.client.namespaces;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.jsoniter.spi.TypeLiteral;
 import com.simplyti.cloud.kube.client.AbstractKubeApi;
 import com.simplyti.cloud.kube.client.InternalClient;
 import com.simplyti.cloud.kube.client.domain.Namespace;
@@ -12,7 +12,7 @@ import io.netty.util.concurrent.Future;
 
 public class DefaultNamespacesApi extends AbstractKubeApi<Namespace> implements NamespacesApi{
 	
-	private static final TypeReference<Status> STATUS_TYPE = new TypeReference<Status>() {};
+	private static final TypeLiteral<Status> STATUS_TYPE = new TypeLiteral<Status>() {};
 
 	public DefaultNamespacesApi(InternalClient client) {
 		super(client,"namespaces");
@@ -22,16 +22,14 @@ public class DefaultNamespacesApi extends AbstractKubeApi<Namespace> implements 
 	public Future<Namespace> get(String name) {
 		return this.client.sendRequest(
 				new KubernetesApiRequest(HttpMethod.GET, 
-				"/api/v1/namespaces/"+name,null,
-				resourceClass));
+				"/api/v1/namespaces/"+name,null),resourceClass);
 	}
 
 	@Override
-	public Future<Void> delete(String name) {
+	public Future<Status> delete(String name) {
 		return this.client.sendRequest(
 				new KubernetesApiRequest(HttpMethod.DELETE, 
-				"/api/v1/namespaces/"+name,null,
-				STATUS_TYPE));
+				"/api/v1/namespaces/"+name,null),STATUS_TYPE);
 	}
 
 	@Override

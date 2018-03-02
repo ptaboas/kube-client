@@ -12,8 +12,8 @@
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
-		    <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-		    <distribution>repo</distribution>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
 		</license>
 	</licenses>
 	<scm>
@@ -47,12 +47,11 @@
 		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
 
 		<lombok.version>1.16.18</lombok.version>
-		<netty.version>4.1.15.Final</netty.version>
-		<jackson.version>2.9.1</jackson.version>
+		<netty.version>4.1.22.Final</netty.version>
+		<jsoniter.version>0.9.21</jsoniter.version>
+		<guava.version>24.0-jre</guava.version>
 
-		<guava.version>23.0</guava.version>
-
-		<log4j.version>2.9.0</log4j.version>
+		<log4j.version>2.10.0</log4j.version>
 
 		<junit.version>4.12</junit.version>
 		<hamcrest.version>1.3</hamcrest.version>
@@ -114,14 +113,14 @@
 					<version>${maven-source-plugin.version}</version>
 				</plugin>
 				<plugin>
-			        <groupId>org.apache.maven.plugins</groupId>
-			        <artifactId>maven-javadoc-plugin</artifactId>
-			        <version>${maven-javadoc-plugin.version}</version>
-			    </plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${maven-javadoc-plugin.version}</version>
+				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>${maven-gpg-plugin.version}</version>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>${maven-gpg-plugin.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -254,21 +253,11 @@
 			<version>${netty.version}</version>
 		</dependency>
 
-		<!-- Jackson -->
+		<!-- JSON -->
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
-			<artifactId>jackson-module-parameter-names</artifactId>
-			<version>${jackson.version}</version>
+			<groupId>com.jsoniter</groupId>
+			<artifactId>jsoniter</artifactId>
+			<version>${jsoniter.version}</version>
 		</dependency>
 
 		<!-- Guava -->

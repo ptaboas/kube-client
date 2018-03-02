@@ -1,7 +1,19 @@
 package com.simplyti.cloud.kube.client;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Map;
 import java.util.function.Supplier;
 
+import com.jsoniter.spi.JsoniterSpi;
+import com.jsoniter.spi.TypeLiteral;
+import com.simplyti.cloud.kube.client.JsonPatch.PatchOperation;
+import com.simplyti.cloud.kube.client.domain.PodPhase;
+import com.simplyti.cloud.kube.client.domain.Probe;
+import com.simplyti.cloud.kube.client.domain.SecretData;
 import com.simplyti.cloud.kube.client.endpoints.DefaultEndpointsApi;
 import com.simplyti.cloud.kube.client.endpoints.EndpointsApi;
 import com.simplyti.cloud.kube.client.namespaces.DefaultNamespacesApi;
@@ -17,10 +29,12 @@ import com.simplyti.cloud.kube.client.services.DefaultServicesApi;
 import com.simplyti.cloud.kube.client.services.ServicesApi;
 
 import io.netty.channel.EventLoopGroup;
-import io.netty.handler.ssl.SslContext;
+import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.Future;
 
 public class KubeClient {
+	
+	private static final TypeLiteral<String> STRING_TYPE = new TypeLiteral<String>() {};
 	
 	private final InternalClient internalClient;
 	private final DefaultPodsApi pods;
@@ -30,19 +44,44 @@ public class KubeClient {
 	private final DefaultSecretsApi secrets;
 	private final DefaultServiceAccountsApi serviceaccounts;
 	
-	public KubeClient(EventLoopGroup eventLoopGroup, Address server,boolean verbose, 
-			Supplier<SslContext> sslContextProvider, Supplier<String> tokenProvider){
-		this.internalClient = new InternalClient(eventLoopGroup, server, verbose, sslContextProvider, tokenProvider);
+	@SuppressWarnings("unchecked")
+	public KubeClient(EventLoopGroup eventLoopGroup, ApiServer server,boolean verbose, Supplier<String> tokenProvider){
+		this.internalClient = new InternalClient(eventLoopGroup, server, verbose, tokenProvider);
 		this.pods = new DefaultPodsApi(internalClient);
 		this.services = new DefaultServicesApi(internalClient);
 		this.endpoints = new DefaultEndpointsApi(internalClient);
 		this.namespaces = new DefaultNamespacesApi(internalClient);
 		this.secrets = new DefaultSecretsApi(internalClient);
 		this.serviceaccounts = new DefaultServiceAccountsApi(internalClient);
+		
+		JsoniterSpi.registerTypeDecoder(LocalDateTime.class, iter->LocalDateTime.ofInstant(Instant.parse(iter.readString()), ZoneOffset.UTC));
+		JsoniterSpi.registerTypeDecoder(PodPhase.class, iter->PodPhase.valueOf(iter.readString().toUpperCase()));
+		JsoniterSpi.registerTypeDecoder(Probe.class, iter->{
+			Map<?,?> map = iter.read(Map.class);
+			int failureThreshold= (Integer) map.get("failureThreshold");
+			int successThreshold= (Integer) map.get("successThreshold");
+			int initialDelaySeconds = (Integer) map.get("initialDelaySeconds");
+			int periodSeconds = (Integer) map.get("periodSeconds");
+			if(map.containsKey("exec")) {
+				Map<?,?> exec = (Map<?, ?>) map.get("exec");
+				return Probe.exec((Collection<String>)exec.get("command"),failureThreshold,successThreshold,initialDelaySeconds,periodSeconds);
+			}else if(map.containsKey("httpGet")) {
+				Map<?,?> httpGet = (Map<?, ?>) map.get("httpGet");
+				return Probe.http((String) httpGet.get("path"), (Integer) httpGet.get("port"), failureThreshold, successThreshold, initialDelaySeconds, periodSeconds);
+			}else {
+				Map<?,?> tcpSocket = (Map<?, ?>) map.get("tcpSocket");
+				return Probe.tcp((Integer) tcpSocket.get("port"), failureThreshold, successThreshold, initialDelaySeconds, periodSeconds);
+			}
+		});
+	
+		JsoniterSpi.registerTypeEncoder(PatchOperation.class, (value,stream)->stream.writeVal(((PatchOperation)value).name().toLowerCase()));
+		
+		JsoniterSpi.registerTypeEncoder(SecretData.class, (value,stream)->stream.writeVal(Base64.getEncoder().encodeToString(SecretData.class.cast(value).getData())));
+		JsoniterSpi.registerTypeDecoder(SecretData.class, iter->SecretData.of(Base64.getDecoder().decode(iter.readString().getBytes(CharsetUtil.UTF_8))));
 	}
 	
 	public Future<String> health() {
-		return this.internalClient.sendRequest(new GetHealthRequest());
+		return this.internalClient.sendRequest(new GetHealthRequest(),STRING_TYPE);
 	}
 	
 	public PodsApi pods() {

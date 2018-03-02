@@ -3,6 +3,7 @@ package com.simplyti.cloud.kube.client.pods;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Iterables;
+import com.jsoniter.spi.TypeLiteral;
 import com.simplyti.cloud.kube.client.AbstractNamespacedKubeApi;
 import com.simplyti.cloud.kube.client.InternalClient;
 import com.simplyti.cloud.kube.client.ResourceSupplier;
@@ -15,6 +16,8 @@ import io.netty.util.concurrent.Promise;
 
 public class DefaultNamespacedPodsApi extends AbstractNamespacedKubeApi<Pod, PodCreationBuilder,PodUpdater> implements NamespacedPodsApi {
 
+	private static final TypeLiteral<byte[]> ARRAY_BYTE_TYPE = new TypeLiteral<byte[]>() {};
+	
 	private final InternalClient client;
 
 	public DefaultNamespacedPodsApi(InternalClient client, String namespace, ResourceSupplier<Pod, PodCreationBuilder, PodUpdater> resourceSupplier) {
@@ -30,7 +33,7 @@ public class DefaultNamespacedPodsApi extends AbstractNamespacedKubeApi<Pod, Pod
 				Pod pod = (Pod) futurePod.getNow();
 				if(pod.getSpec().getContainers().size()==1){
 					String container = Iterables.getFirst(pod.getSpec().getContainers(), null).getName();
-					client.sendRequest(promise,new KubernetesCommandExec(namespace,name,container,command),true);
+					client.sendRequest(promise,new KubernetesCommandExec(namespace,name,container,command),ARRAY_BYTE_TYPE,true);
 				}else{
 					promise.setFailure(new IllegalArgumentException("Must specify container name: "+pod.getSpec().getContainers().stream().map(Container::getName).collect(Collectors.toSet())));
 				}
@@ -43,7 +46,7 @@ public class DefaultNamespacedPodsApi extends AbstractNamespacedKubeApi<Pod, Pod
 
 	@Override
 	public Future<byte[]> execute(String name, String container, String command) {
-		return client.sendRequest(new KubernetesCommandExec(namespace,name,container,command),true);
+		return client.sendRequest(new KubernetesCommandExec(namespace,name,container,command),ARRAY_BYTE_TYPE,true);
 	}
 
 }

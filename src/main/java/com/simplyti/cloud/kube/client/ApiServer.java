@@ -5,9 +5,10 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class Address {
+public class ApiServer {
 	
 	private final String host;
 	private final Integer port;
+	private final SslContextProvider sslContextProvider;
 
 }

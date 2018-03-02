@@ -2,7 +2,7 @@ package com.simplyti.cloud.kube.client.namespaces;
 
 import java.util.Collection;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.jsoniter.spi.TypeLiteral;
 import com.simplyti.cloud.kube.client.InternalClient;
 import com.simplyti.cloud.kube.client.JsonPatch;
 import com.simplyti.cloud.kube.client.ResourceUpdater;
@@ -17,10 +17,10 @@ public class NamespaceUpdater extends ResourceUpdater<Namespace,NamespaceUpdater
 
 	private final InternalClient client;
 	private final String name;
-	private final TypeReference<Namespace> resourceClass;
+	private final TypeLiteral<Namespace> resourceClass;
 
 	public NamespaceUpdater(InternalClient client, String name, Future<Namespace> currentFuture,
-			TypeReference<Namespace> resourceClass) {
+			TypeLiteral<Namespace> resourceClass) {
 		super(client.nextExecutor(), currentFuture);
 		this.client=client;
 		this.name=name;
@@ -30,7 +30,7 @@ public class NamespaceUpdater extends ResourceUpdater<Namespace,NamespaceUpdater
 	@Override
 	protected void update(Promise<Namespace> promise,Collection<JsonPatch> patches) {
 		client.sendRequest(promise,new KubernetesApiRequest(HttpMethod.PATCH,
-				"/api/v1/namespaces/"+name,patches,resourceClass));
+				"/api/v1/namespaces/"+name,patches),resourceClass);
 	}
 
 }

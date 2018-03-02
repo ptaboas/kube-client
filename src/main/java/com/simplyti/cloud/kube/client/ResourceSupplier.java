@@ -2,6 +2,7 @@ package com.simplyti.cloud.kube.client;
 
 import com.simplyti.cloud.kube.client.domain.KubernetesResource;
 import com.simplyti.cloud.kube.client.domain.ResourceList;
+import com.simplyti.cloud.kube.client.domain.Status;
 import com.simplyti.cloud.kube.client.observe.Observable;
 
 import io.netty.util.concurrent.Future;
@@ -12,7 +13,7 @@ public interface ResourceSupplier<T extends KubernetesResource, B extends Creati
 
 	Future<T> get(String namespace, String name);
 
-	Future<Void> delete(String namespace, String name);
+	Future<Status> delete(String namespace, String name);
 
 	Observable<T> watch(String version, String namespace);
 

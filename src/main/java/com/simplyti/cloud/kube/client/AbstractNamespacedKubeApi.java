@@ -2,6 +2,7 @@ package com.simplyti.cloud.kube.client;
 
 import com.simplyti.cloud.kube.client.domain.KubernetesResource;
 import com.simplyti.cloud.kube.client.domain.ResourceList;
+import com.simplyti.cloud.kube.client.domain.Status;
 import com.simplyti.cloud.kube.client.observe.Observable;
 
 import io.netty.util.concurrent.Future;
@@ -27,7 +28,7 @@ public abstract class AbstractNamespacedKubeApi<T extends KubernetesResource, B 
 	}
 
 	@Override
-	public Future<Void> delete(String name) {
+	public Future<Status> delete(String name) {
 		return resourceSupplier.delete(namespace,name);
 	}
 	

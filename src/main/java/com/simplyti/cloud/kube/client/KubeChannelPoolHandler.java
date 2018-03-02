@@ -1,6 +1,5 @@
 package com.simplyti.cloud.kube.client;
 
-
 import java.nio.channels.ClosedChannelException;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -12,7 +11,6 @@ import com.simplyti.cloud.kube.client.coder.KubernetesApiResponseHandler;
 import com.simplyti.cloud.kube.client.coder.KubernetesCommandExecEncoder;
 import com.simplyti.cloud.kube.client.coder.KubernetesCommandExecResponseHandler;
 import com.simplyti.cloud.kube.client.coder.KubernetesHttpAuthenticator;
-import com.simplyti.cloud.kube.client.mapper.KubeObjectMapper;
 
 import io.netty.channel.Channel;
 import io.netty.channel.pool.AbstractChannelPoolHandler;
@@ -44,10 +42,9 @@ public class KubeChannelPoolHandler extends AbstractChannelPoolHandler {
 	
 	public KubeChannelPoolHandler(String remoteHost, boolean verbose, Supplier<SslContext> sslContextProvider,
 			Supplier<String> tokenProvider){
-		KubeObjectMapper mapper = new KubeObjectMapper();
-		kubernetesApiRequestEncoder = new KubernetesApiRequestEncoder(mapper,remoteHost);
+		kubernetesApiRequestEncoder = new KubernetesApiRequestEncoder(remoteHost);
 		kubernetesCommandExecEncoder = new KubernetesCommandExecEncoder(remoteHost);
-		kubernetesApiResponseHandler = new KubernetesApiResponseHandler(mapper);
+		kubernetesApiResponseHandler = new KubernetesApiResponseHandler();
 		kubernetesCommandExecResponseHandler = new KubernetesCommandExecResponseHandler(verbose);
 		kubeApiEventChunkDecoder = new KubeApiEventChunkDecoder();
 		this.sslContextProvider=sslContextProvider;
@@ -63,7 +60,6 @@ public class KubeChannelPoolHandler extends AbstractChannelPoolHandler {
 			Optional.ofNullable(ch.attr(InternalClient.SINGLE_RESPONSE_PROMISE).get())
 				.ifPresent(currentPromise->currentPromise.tryFailure(new ClosedChannelException()));
 		});
-		
 		
 		ch.pipeline().addLast(new IdleStateHandler(0,0,30));
 		ch.pipeline().addLast(this.channelIddleHandler);

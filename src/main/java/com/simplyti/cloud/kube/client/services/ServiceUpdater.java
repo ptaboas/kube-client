@@ -2,7 +2,7 @@ package com.simplyti.cloud.kube.client.services;
 
 import java.util.Collection;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.jsoniter.spi.TypeLiteral;
 import com.simplyti.cloud.kube.client.AbstractUpdater;
 import com.simplyti.cloud.kube.client.InternalClient;
 import com.simplyti.cloud.kube.client.JsonPatch;
@@ -13,7 +13,7 @@ import com.simplyti.cloud.kube.client.domain.ServicePort;
 public class ServiceUpdater extends AbstractUpdater<Service,ServiceUpdater> implements ServiceCreationBuilder<ServiceUpdater>{
 
 	public ServiceUpdater(InternalClient client,
-			String namespace, String name, String resourceName, TypeReference<Service> resourceClass,
+			String namespace, String name, String resourceName, TypeLiteral<Service> resourceClass,
 			ResourceSupplier<Service, ?,?> supplier) {
 		super(client, namespace, name, resourceName, resourceClass,supplier);
 	}

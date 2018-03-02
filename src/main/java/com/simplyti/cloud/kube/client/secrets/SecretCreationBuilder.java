@@ -20,8 +20,8 @@ public class SecretCreationBuilder extends AbstractCreationBuilder<Secret,Secret
 		super(client,namespace,resourceName);
 	}
 	
-	public SecretCreationBuilder withData(String key, SecretData data){
-		this.data.put(key,data);
+	public SecretCreationBuilder withData(String key, String str){
+		this.data.put(key,SecretData.of(str));
 		return this;
 	}
 

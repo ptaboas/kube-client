@@ -1,17 +1,15 @@
 package com.simplyti.cloud.kube.client.domain;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jsoniter.annotation.JsonCreator;
+import com.jsoniter.annotation.JsonProperty;
 
 import lombok.Getter;
 
-
+@Getter
 public class Pod extends KubernetesResource{
 	
-	@Getter
 	private final PodStatus status;
 	
-	@Getter
 	private final PodSpec spec;
 	
 	@JsonCreator

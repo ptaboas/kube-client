@@ -25,6 +25,7 @@ import com.simplyti.cloud.kube.client.domain.Address;
 import com.simplyti.cloud.kube.client.domain.Endpoint;
 import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.Port;
+import com.simplyti.cloud.kube.client.domain.Status;
 
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -70,7 +71,7 @@ public class EndpointsStepDefinitions {
 	@When("^I delete endpoint \"([^\"]*)\"$")
 	public void iDeleteEndpoint(String key) throws Throwable {
 		Endpoint endpoint = (Endpoint) scenarioData.get(key);
-		Future<Void> result = client.namespace(endpoint.getMetadata().getNamespace()).endpoints().delete(endpoint.getMetadata().getName()).await();
+		Future<Status> result = client.namespace(endpoint.getMetadata().getNamespace()).endpoints().delete(endpoint.getMetadata().getName()).await();
 		assertTrue(result.isSuccess());
 	}
 	

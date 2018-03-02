@@ -6,14 +6,18 @@ import com.jsoniter.annotation.JsonProperty;
 import lombok.Getter;
 
 @Getter
-public class Namespace extends KubernetesResource{
-	
+public class KubernetesStatus extends KubernetesResource{
+
+	private final String message;
+
 	@JsonCreator
-	public Namespace(
+	public KubernetesStatus(
 			@JsonProperty("kind") String kind,
 			@JsonProperty("apiVersion") String apiVersion,
-			@JsonProperty("metadata") Metadata metadata){
+			@JsonProperty("metadata") Metadata metadata,
+			@JsonProperty("message") String message) {
 		super(kind,apiVersion,metadata);
+		this.message=message;
 	}
-	
+
 }

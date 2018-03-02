@@ -2,6 +2,7 @@ package com.simplyti.cloud.kube.client.steps;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -40,6 +41,9 @@ public class NamespaceScepDefinitions {
 		Future<Namespace> result = client.namespaces().builder().withName(name).create().await();
 		assertTrue(result.isSuccess());
 		assertThat(result.getNow(),notNullValue());
+		await().pollInterval(1, TimeUnit.SECONDS).atMost(30,TimeUnit.SECONDS)
+		.until(()->client.serviceaccounts().list().await().get().getItems().size(),
+				greaterThan(0));
 		if(scenarioData.containsKey(CREATED_NAMESPACES)){
 			((List<String>)scenarioData.get(CREATED_NAMESPACES)).add(name);
 		}else{
@@ -61,7 +65,7 @@ public class NamespaceScepDefinitions {
 			List<String> namespaces = ((List<String>)scenarioData.get(CREATED_NAMESPACES));
 			namespaces.forEach(client.namespaces()::delete);
 			
-			await().pollInterval(1, TimeUnit.SECONDS).atMost(30,TimeUnit.SECONDS)
+			await().pollInterval(1, TimeUnit.SECONDS).atMost(2,TimeUnit.MINUTES)
 				.until(()->client.namespaces().list().await().getNow().getItems().stream()
 						.noneMatch(namespace->namespaces.contains(namespace.getMetadata().getName())));
 		}

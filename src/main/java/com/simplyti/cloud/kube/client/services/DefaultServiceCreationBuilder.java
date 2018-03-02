@@ -21,6 +21,7 @@ public class DefaultServiceCreationBuilder extends AbstractCreationBuilder<Servi
 	private final List<ServicePort> servicePorts;
 	private final ImmutableMap.Builder<String, String> selectorBuilder = ImmutableMap.<String,String>builder();
 	private ServiceType type;
+	private String clusterIp;
 
 	public DefaultServiceCreationBuilder(InternalClient client,String namespace, String resourceName) {
 		super(client,namespace,resourceName);
@@ -32,6 +33,7 @@ public class DefaultServiceCreationBuilder extends AbstractCreationBuilder<Servi
 		return new Service(KIND, API, 
 				metadata, 
 				ServiceSpec.builder()
+				.clusterIP(clusterIp)
 				.ports(servicePorts)
 				.selector(selectorBuilder.build())
 				.type(type)
@@ -59,6 +61,11 @@ public class DefaultServiceCreationBuilder extends AbstractCreationBuilder<Servi
 	
 	public DefaultServiceCreationBuilder withType(ServiceType type) {
 		this.type=type;
+		return this;
+	}
+
+	public DefaultServiceCreationBuilder withClusterIp(String clusterIp) {
+		this.clusterIp=clusterIp;
 		return this;
 	}
 

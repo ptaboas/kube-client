@@ -3,7 +3,7 @@ version: '3'
 services:
 
   etcd:
-    image: quay.io/coreos/etcd:v3.1.5
+    image: quay.io/coreos/etcd:v3.3.1
     restart: on-failure
     command: 
     - /usr/local/bin/etcd
@@ -20,7 +20,7 @@ services:
     - 2379:2379
     
   apiserver:
-    image: gcr.io/google_containers/hyperkube:v1.7.8
+    image: gcr.io/google_containers/hyperkube:v1.9.3
     restart: on-failure
     command:
     - /hyperkube
@@ -36,10 +36,10 @@ services:
     - 8080:8080
     - 443:6443
     volumes:
-    - kube-data:/var/run/kubernetes:rw
+    - master:/var/run/kubernetes:rw
     
   scheduler:
-    image: gcr.io/google_containers/hyperkube:v1.7.8
+    image: gcr.io/google_containers/hyperkube:v1.9.3
     restart: on-failure
     command:
     - /hyperkube
@@ -47,9 +47,11 @@ services:
     - --leader-elect=true
     - --master=http://apiserver:8080
     - --v=1
+    volumes:
+    - master:/var/run/kubernetes:rw
 
   controller-manager:
-    image: gcr.io/google_containers/hyperkube:v1.7.8
+    image: gcr.io/google_containers/hyperkube:v1.9.3
     restart: on-failure
     command:
     - /hyperkube
@@ -60,31 +62,25 @@ services:
     - --service-account-private-key-file=/var/run/kubernetes/apiserver.key
     - --v=1
     volumes:
-    - kube-data:/var/run/kubernetes:ro
+    - master:/var/run/kubernetes:rw
     
   kubelet:
-    image: gcr.io/google_containers/hyperkube:v1.7.8
+    image: gcr.io/google_containers/hyperkube:v1.9.3
     restart: on-failure
     command:
     - /hyperkube
     - kubelet
-    - --containerized
-    - --allow-privileged=true
-    - --api-servers=http://apiserver:8080
     - --cluster-dns=10.10.0.2
-    - --cluster-domain=cluster.local
-    - --container-runtime=docker
-    - --cgroups-per-qos=false
-    - --enforce-node-allocatable=
+    - --kubeconfig=${project.build.testOutputDirectory}/kubelet/kubeconfig
+    - --fail-swap-on=false
+    - --root-dir=${project.build.testOutputDirectory}/kubelet
     - --v=1
     volumes:
-    - /:/rootfs:ro
-    - /sys:/sys:ro
-    - /var/run:/var/run:rw
-    - /var/lib/docker/:/var/lib/docker:rw
-    - /var/lib/kubelet:/var/lib/kubelet:rw
-    - /dev:/dev
+    - ${project.build.testOutputDirectory}/kubelet:${project.build.testOutputDirectory}/kubelet:rw
+    - /var/run/docker.sock:/var/run/docker.sock:rw
+    - /var/lib/docker:/var/lib/docker:rw
     privileged: true
     
 volumes:
-  kube-data:
+  master:
+  kubelet:

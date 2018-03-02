@@ -1,18 +1,17 @@
 package com.simplyti.cloud.kube.client.coder;
 
-import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.jsoniter.JsonIterator;
+import com.jsoniter.spi.TypeLiteral;
 import com.simplyti.cloud.kube.client.InternalClient;
 import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.KubernetesResource;
+import com.simplyti.cloud.kube.client.domain.KubernetesStatus;
 import com.simplyti.cloud.kube.client.exception.KubeClientErrorException;
-import com.simplyti.cloud.kube.client.mapper.KubeObjectMapper;
 import com.simplyti.cloud.kube.client.observe.Observable;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -26,15 +25,9 @@ import io.netty.util.concurrent.Promise;
 @Sharable
 public class KubernetesApiResponseHandler extends SimpleChannelInboundHandler<Object> {
 	
-	private final KubeObjectMapper mapper;
-	
-	public KubernetesApiResponseHandler(KubeObjectMapper mapper) {
-		this.mapper=mapper;
-	}
-
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-		TypeReference<?> responseclass = ctx.channel().attr(KubernetesApiRequestEncoder.RESPONSE_CLASS).get();
+		TypeLiteral<?> responseclass = ctx.channel().attr(InternalClient.RESPONSE_CLASS).get();
 		ByteBuf content;
 		if(msg instanceof FullHttpResponse){
 			content = ((FullHttpResponse)msg).content();
@@ -45,7 +38,7 @@ public class KubernetesApiResponseHandler extends SimpleChannelInboundHandler<Ob
 		if(isEventClass(responseclass)){
 			Observable<KubernetesResource> observable = ctx.channel().attr(AttributeKey.<Observable<KubernetesResource>>valueOf(InternalClient.OBSERVABLE_RESPONSE_NAME)).get();
 			@SuppressWarnings("unchecked")
-			Event<KubernetesResource> response = (Event<KubernetesResource>) mapper.readValue((InputStream)new ByteBufInputStream(content), responseclass);
+			Event<KubernetesResource> response = (Event<KubernetesResource>) JsonIterator.deserialize(toBytes(content), responseclass);
 			observable.notifyObservers(response);
 		}else{
 			Promise<Object> future = ctx.channel().attr(AttributeKey.<Promise<Object>>valueOf(InternalClient.SINGLE_RESPONSE_PROMISE_NAME)).get();
@@ -56,20 +49,33 @@ public class KubernetesApiResponseHandler extends SimpleChannelInboundHandler<Ob
 				if(httpResponse.status().equals(HttpResponseStatus.NOT_FOUND)){
 					future.setSuccess(null);
 				}else if (httpResponse.status().code()<300){
-					future.setSuccess(mapper.readValue((InputStream)new ByteBufInputStream(content), responseclass));
+					future.setSuccess(JsonIterator.deserialize(toBytes(content), responseclass));
 				}else{
-					future.setFailure(new KubeClientErrorException(content.toString(CharsetUtil.UTF_8).trim(), httpResponse.status().code()));
+					future.setFailure(new KubeClientErrorException(JsonIterator.deserialize(toBytes(content),KubernetesStatus.class), httpResponse.status().code()));
 				}
 			}
 		}
 	}
 
-	private boolean isEventClass(TypeReference<?> responseclass) {
+	private byte[] toBytes(ByteBuf content) {
+		byte[] data = new byte[content.readableBytes()];
+		content.readBytes(data);
+		return data;
+	}
+
+	private boolean isEventClass(TypeLiteral<?> responseclass) {
 		if(responseclass.getType() instanceof ParameterizedType){
 			ParameterizedType parameterizedType = (ParameterizedType) responseclass.getType();
 			return Event.class.isAssignableFrom((Class<?>) parameterizedType.getRawType());
 		}
 		return false;
+	}
+	
+	@Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+            throws Exception {
+		Promise<Object> future = ctx.channel().attr(AttributeKey.<Promise<Object>>valueOf(InternalClient.SINGLE_RESPONSE_PROMISE_NAME)).get();
+		future.setFailure(cause);
 	}
 
 }

@@ -2,8 +2,8 @@ package com.simplyti.cloud.kube.client.namespaces;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
+import com.jsoniter.spi.TypeLiteral;
 import com.simplyti.cloud.kube.client.CreationBuilder;
 import com.simplyti.cloud.kube.client.InternalClient;
 import com.simplyti.cloud.kube.client.domain.Metadata;
@@ -15,7 +15,7 @@ import io.netty.util.concurrent.Future;
 
 public class NamespaceCreationBuilder implements CreationBuilder<Namespace> {
 	
-	private static final TypeReference<Namespace> TYPE = new TypeReference<Namespace>() {};
+	private static final TypeLiteral<Namespace> TYPE = new TypeLiteral<Namespace>() {};
 	
 	public static final String KIND = "Namespace";
 	public static final String API = "v1";
@@ -38,7 +38,7 @@ public class NamespaceCreationBuilder implements CreationBuilder<Namespace> {
 	@Override
 	public Future<Namespace> create() {
 		Namespace namespace = new Namespace(KIND, API, Metadata.builder().name(name).labels(labels).build());
-		return client.sendRequest(new KubernetesApiRequest(HttpMethod.POST, "/api/v1/namespaces",namespace,TYPE));
+		return client.sendRequest(new KubernetesApiRequest(HttpMethod.POST, "/api/v1/namespaces",namespace),TYPE);
 	}
 
 	@Override

@@ -1,6 +1,5 @@
 Feature: Kubernetes client
 
-
 Scenario Outline: Create a non secured simple client
 	When I crete a kubernetes client "#client" with next options:
 		| server | <server> |

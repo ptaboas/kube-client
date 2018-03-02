@@ -3,7 +3,8 @@ package com.simplyti.cloud.kube.client.coder;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.jsoniter.spi.TypeLiteral;
+import com.simplyti.cloud.kube.client.InternalClient;
 import com.simplyti.cloud.kube.client.domain.Event;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -19,7 +20,7 @@ public class KubeApiEventChunkDecoder extends MessageToMessageDecoder<HttpObject
 
 	@Override
 	protected void decode(ChannelHandlerContext ctx, HttpObject msg, List<Object> out) throws Exception {
-		TypeReference<?> responseclass = ctx.channel().attr(KubernetesApiRequestEncoder.RESPONSE_CLASS).get();
+		TypeLiteral<?> responseclass = ctx.channel().attr(InternalClient.RESPONSE_CLASS).get();
 		
 		if(responseclass!=null && isEventClass(responseclass)){
 			if(HttpResponse.class.isAssignableFrom(msg.getClass())){
@@ -35,7 +36,7 @@ public class KubeApiEventChunkDecoder extends MessageToMessageDecoder<HttpObject
 		
 	}
 	
-	private boolean isEventClass(TypeReference<?> responseclass) {
+	private boolean isEventClass(TypeLiteral<?> responseclass) {
 		if(responseclass.getType() instanceof ParameterizedType){
 			ParameterizedType parameterizedType = (ParameterizedType) responseclass.getType();
 			return Event.class.isAssignableFrom((Class<?>) parameterizedType.getRawType());

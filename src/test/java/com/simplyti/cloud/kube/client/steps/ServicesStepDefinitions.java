@@ -35,6 +35,7 @@ import com.simplyti.cloud.kube.client.domain.ResourceList;
 import com.simplyti.cloud.kube.client.domain.Service;
 import com.simplyti.cloud.kube.client.domain.ServicePort;
 import com.simplyti.cloud.kube.client.domain.ServiceProtocol;
+import com.simplyti.cloud.kube.client.domain.Status;
 import com.simplyti.cloud.kube.client.services.DefaultServiceCreationBuilder;
 import com.simplyti.cloud.kube.client.services.ServicePortCreationBuilder;
 
@@ -208,7 +209,7 @@ public class ServicesStepDefinitions {
 	@When("^I delete service \"([^\"]*)\"$")
 	public void iDeleteService(String key) throws Throwable {
 		Service service = (Service) scenarioData.get(key);
-		Future<Void> result = client.services().namespace(service.getMetadata().getNamespace()).delete(service.getMetadata().getName()).await();
+		Future<Status> result = client.services().namespace(service.getMetadata().getNamespace()).delete(service.getMetadata().getName()).await();
 		assertTrue(result.isSuccess());
 	}
 

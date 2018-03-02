@@ -30,6 +30,7 @@ import com.simplyti.cloud.kube.client.domain.Pod;
 import com.simplyti.cloud.kube.client.domain.PodPhase;
 import com.simplyti.cloud.kube.client.domain.Probe;
 import com.simplyti.cloud.kube.client.domain.ResourceList;
+import com.simplyti.cloud.kube.client.domain.Status;
 import com.simplyti.cloud.kube.client.domain.TcpProbe;
 import com.simplyti.cloud.kube.client.pods.PodCreationBuilder;
 import com.simplyti.cloud.kube.client.pods.PodUpdater;
@@ -264,7 +265,7 @@ public class PodsStepDefinitions {
 	@Then("^I delete pod \"([^\"]*)\"$")
 	public void iDeletePod(String key) throws Throwable {
 		Pod pod = (Pod) scenarioData.get(key);
-		Future<Void> result = client.namespace(pod.getMetadata().getNamespace()).pods().delete(pod.getMetadata().getName()).await();
+		Future<Status> result = client.namespace(pod.getMetadata().getNamespace()).pods().delete(pod.getMetadata().getName()).await();
 		assertTrue(result.isSuccess());
 	}
 

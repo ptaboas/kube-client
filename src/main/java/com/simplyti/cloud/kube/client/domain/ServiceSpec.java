@@ -1,21 +1,37 @@
 package com.simplyti.cloud.kube.client.domain;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
-import lombok.AllArgsConstructor;
+import com.jsoniter.annotation.JsonCreator;
+import com.jsoniter.annotation.JsonProperty;
+
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-@AllArgsConstructor
 public class ServiceSpec {
 	
 	private final String clusterIP;
-	private final Collection<ServicePort> ports;
+	private final String loadBalancerIP;
+	private final List<ServicePort> ports;
 	private final Map<String,String> selector;
 	private final ServiceType type;
+	
+	@JsonCreator
+	public ServiceSpec(
+			@JsonProperty("clusterIP") String clusterIP,
+			@JsonProperty("loadBalancerIP") String loadBalancerIP,
+			@JsonProperty("ports") List<ServicePort> ports,
+			@JsonProperty("selector") Map<String,String> selector,
+			@JsonProperty("type") ServiceType type) {
+		this.clusterIP=clusterIP;
+		this.loadBalancerIP=loadBalancerIP;
+		this.ports=ports;
+		this.selector=selector;
+		this.type=type;
+	}
 	
 
 }

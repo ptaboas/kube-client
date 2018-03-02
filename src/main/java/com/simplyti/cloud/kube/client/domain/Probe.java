@@ -2,17 +2,30 @@ package com.simplyti.cloud.kube.client.domain;
 
 import java.util.Collection;
 
-import lombok.AllArgsConstructor;
+import com.jsoniter.annotation.JsonCreator;
+import com.jsoniter.annotation.JsonProperty;
+
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
 public abstract class Probe {
 	
 	private final int failureThreshold;
 	private final int successThreshold;
 	private final int initialDelaySeconds;
 	private final int periodSeconds;
+	
+	@JsonCreator
+	public Probe(
+			@JsonProperty("failureThreshold") int failureThreshold,
+			@JsonProperty("successThreshold") int successThreshold,
+			@JsonProperty("initialDelaySeconds") int initialDelaySeconds,
+			@JsonProperty("periodSeconds") int periodSeconds){
+		this.failureThreshold=failureThreshold;
+		this.successThreshold=successThreshold;
+		this.initialDelaySeconds=initialDelaySeconds;
+		this.periodSeconds=periodSeconds;
+	}
 
 	public static Probe exec(Collection<String> command, int failureThreshold, int successThreshold, int initialDelaySeconds , int periodSeconds) {
 		return new CommandProbe(new ExecAction(command),failureThreshold,successThreshold,initialDelaySeconds,periodSeconds);

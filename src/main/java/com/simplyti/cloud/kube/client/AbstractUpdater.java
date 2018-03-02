@@ -2,7 +2,7 @@ package com.simplyti.cloud.kube.client;
 
 import java.util.Collection;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.jsoniter.spi.TypeLiteral;
 import com.simplyti.cloud.kube.client.domain.KubernetesResource;
 import com.simplyti.cloud.kube.client.reqs.KubernetesApiRequest;
 
@@ -15,11 +15,11 @@ public abstract class AbstractUpdater<T extends KubernetesResource,U extends Upd
 	private final String namespace;
 	private final String name;
 	private final String resourceName;
-	private final TypeReference<T> resourceClass;
+	private final TypeLiteral<T> resourceClass;
 	
 	public AbstractUpdater(InternalClient client, 
 			String namespace,String name,
-			String resourceName,TypeReference<T> resourceClass,
+			String resourceName,TypeLiteral<T> resourceClass,
 			ResourceSupplier<T, ?,?> supplier){
 		super(client.nextExecutor(),supplier.get(namespace, name));
 		this.client=client;
@@ -32,7 +32,7 @@ public abstract class AbstractUpdater<T extends KubernetesResource,U extends Upd
 	@Override
 	public void update(Promise<T> promise,Collection<JsonPatch> patches) {
 		client.sendRequest(promise,new KubernetesApiRequest(HttpMethod.PATCH,
-				"/api/v1/namespaces/"+namespace+"/"+resourceName+"/"+name,patches,resourceClass));
+				"/api/v1/namespaces/"+namespace+"/"+resourceName+"/"+name,patches),resourceClass);
 	}
 	
 }
