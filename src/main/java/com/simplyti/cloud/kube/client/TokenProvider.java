@@ -10,10 +10,12 @@ import java.util.function.Supplier;
 
 import com.google.common.base.MoreObjects;
 
-import lombok.extern.log4j.Log4j2;
+import io.netty.util.internal.logging.InternalLogger;
+import io.netty.util.internal.logging.InternalLoggerFactory;
 
-@Log4j2
 public class TokenProvider implements Supplier<String>{
+	
+	private final InternalLogger log = InternalLoggerFactory.getInstance(getClass());
 
 	private static final String DEFAULT_TOKEN_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/token";
 	private String token;

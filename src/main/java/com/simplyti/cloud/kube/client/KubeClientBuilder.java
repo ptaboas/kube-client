@@ -8,6 +8,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.Log4J2LoggerFactory;
 
 public class KubeClientBuilder {
 	
@@ -66,6 +68,11 @@ public class KubeClientBuilder {
 	
 	public KubeClientBuilder tokenFile(String tokenFile) {
 		this.tokenFile=tokenFile;
+		return this;
+	}
+	
+	public KubeClientBuilder withLog4J2Logger() {
+		InternalLoggerFactory.setDefaultFactory(Log4J2LoggerFactory.INSTANCE);
 		return this;
 	}
 

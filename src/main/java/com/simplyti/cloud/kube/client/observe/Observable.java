@@ -11,10 +11,12 @@ import com.simplyti.cloud.kube.client.domain.KubernetesResource;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
-import lombok.extern.log4j.Log4j2;
+import io.netty.util.internal.logging.InternalLogger;
+import io.netty.util.internal.logging.InternalLoggerFactory;
 
-@Log4j2
 public class Observable<T extends KubernetesResource> {
+	
+	private final InternalLogger log = InternalLoggerFactory.getInstance(getClass());
 	
 	private final EventLoop executor;
 	

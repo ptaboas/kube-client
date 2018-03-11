@@ -61,7 +61,7 @@ public class ClientStepDefinitions {
 	public void iCreteAKubernetesClientWithNextOptions(String key, Map<String,String> options) throws Throwable {
 	    KubeClientBuilder builder = KubeClient.builder()
 	    		.eventLoop(new NioEventLoopGroup())
-	    		.verbose(true);
+	    		.withLog4J2Logger();
 	    builder.server(options.get(SERVER));
 	    if(options.containsKey(CA_FILE)){
 	    	builder.caFile(BUILD_DIR.resolve(options.get(CA_FILE)).toString());

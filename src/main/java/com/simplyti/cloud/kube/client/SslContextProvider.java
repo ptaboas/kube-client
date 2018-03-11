@@ -18,10 +18,12 @@ import com.google.common.base.MoreObjects;
 
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-import lombok.extern.log4j.Log4j2;
+import io.netty.util.internal.logging.InternalLogger;
+import io.netty.util.internal.logging.InternalLoggerFactory;
 
-@Log4j2
 public class SslContextProvider implements Supplier<SslContext>{
+	
+	private final InternalLogger log = InternalLoggerFactory.getInstance(getClass());
 
 	private static final String DEFAULT_CA_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
 	private static final String CERT_TYPE = "X.509";

@@ -24,12 +24,12 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
+import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
-import io.netty.util.internal.logging.Log4J2LoggerFactory;
-import lombok.extern.log4j.Log4j2;
 
-@Log4j2
 public class InternalClient {
+	
+	private final InternalLogger log = InternalLoggerFactory.getInstance(getClass());
 	
 	public static final AttributeKey<TypeLiteral<?>> RESPONSE_CLASS = AttributeKey.valueOf("responseClass");
 	
@@ -43,7 +43,6 @@ public class InternalClient {
 	private final SimpleChannelPool pool;
 
 	public InternalClient(EventLoopGroup eventLoopGroup, ApiServer server, boolean verbose, Supplier<String> tokenProvider){
-		InternalLoggerFactory.setDefaultFactory(Log4J2LoggerFactory.INSTANCE);
 		this.eventLoopGroup=eventLoopGroup;
 		 Bootstrap b = new Bootstrap().group(eventLoopGroup)
 				.channel(channelClass())
