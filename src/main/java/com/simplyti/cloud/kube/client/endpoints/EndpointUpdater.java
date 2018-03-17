@@ -10,9 +10,9 @@ import com.simplyti.cloud.kube.client.domain.Endpoint;
 
 public class EndpointUpdater extends AbstractUpdater<Endpoint,EndpointUpdater> {
 
-	public EndpointUpdater(InternalClient client, String namespace, String name, String resourceName,
+	public EndpointUpdater(InternalClient client, String api, String namespace, String name, String resourceName,
 			TypeLiteral<Endpoint> resourceClass,ResourceSupplier<Endpoint, ?,?> supplier) {
-		super(client, namespace, name, resourceName, resourceClass,supplier);
+		super(client, api, namespace, name, resourceName, resourceClass,supplier);
 	}
 
 	public EndpointAddressesUpdater addAddress() {

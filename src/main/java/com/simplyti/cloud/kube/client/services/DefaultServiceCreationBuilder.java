@@ -16,21 +16,20 @@ import com.simplyti.cloud.kube.client.domain.ServiceType;
 public class DefaultServiceCreationBuilder extends AbstractCreationBuilder<Service,DefaultServiceCreationBuilder> implements ServiceCreationBuilder<DefaultServiceCreationBuilder>{
 
 	public static final String KIND = "Service";
-	public static final String API = "v1";
 	
 	private final List<ServicePort> servicePorts;
 	private final ImmutableMap.Builder<String, String> selectorBuilder = ImmutableMap.<String,String>builder();
 	private ServiceType type;
 	private String clusterIp;
 
-	public DefaultServiceCreationBuilder(InternalClient client,String namespace, String resourceName) {
-		super(client,namespace,resourceName);
+	public DefaultServiceCreationBuilder(InternalClient client, String api, String namespace, String resourceName) {
+		super(client,api,namespace,resourceName);
 		this.servicePorts=new ArrayList<>();
 	}
 
 	@Override
 	protected Service create(Metadata metadata) {
-		return new Service(KIND, API, 
+		return new Service(KIND, api(), 
 				metadata, 
 				ServiceSpec.builder()
 				.clusterIP(clusterIp)

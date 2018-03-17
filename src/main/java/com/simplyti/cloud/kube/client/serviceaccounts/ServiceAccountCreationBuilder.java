@@ -8,15 +8,14 @@ import com.simplyti.cloud.kube.client.domain.ServiceAccount;
 public class ServiceAccountCreationBuilder extends AbstractCreationBuilder<ServiceAccount,ServiceAccountCreationBuilder>{
 
 	public static final String KIND = "ServiceAccount";
-	public static final String API = "v1";
 	
-	public ServiceAccountCreationBuilder(InternalClient client, String namespace) {
-		super(client, namespace, "serviceaccounts");
+	public ServiceAccountCreationBuilder(InternalClient client, String api, String namespace) {
+		super(client, api, namespace, "serviceaccounts");
 	}
 
 	@Override
 	protected ServiceAccount create(Metadata metadata) {
-		return new ServiceAccount(KIND, API, metadata, null);
+		return new ServiceAccount(KIND, api(), metadata, null);
 	}
 
 }

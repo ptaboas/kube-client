@@ -18,34 +18,41 @@ import io.netty.util.concurrent.Future;
 public class AbstractKubeApi<T extends KubernetesResource> {
 	
 	protected final InternalClient client;
+	protected final boolean core;
+	protected final String api;
 	protected final String resourceName;
 	protected final TypeLiteral<T> resourceClass;
 	protected final TypeLiteral<ResourceList<T>> resourceListClass;
 	protected final TypeLiteral<Event<T>> eventsClass;
 
 	@SuppressWarnings("unchecked")
-	public AbstractKubeApi(InternalClient client, String resourceName){
+	public AbstractKubeApi(InternalClient client, boolean core, String api, String resourceName){
 		this.client=client;
+		this.core=core;
+		this.api=api;
 		this.resourceName=resourceName;
 		Type resourceType = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 		this.resourceClass = TypeLiteral.create(resourceType);
-		this.resourceListClass =  TypeLiteral.create(new ParameterizedTypeImpl(ResourceList.class, resourceType)); //new TypeLiteral<ResourceList<T>>(new ParameterizedTypeImpl(ResourceList.class, resourceType));
-		this.eventsClass =  TypeLiteral.create(new ParameterizedTypeImpl(Event.class, resourceType)); //new TypeLiteral<Event<T>>(new ParameterizedTypeImpl(Event.class, resourceType));
+		this.resourceListClass =  TypeLiteral.create(new ParameterizedTypeImpl(ResourceList.class, resourceType)); 
+		this.eventsClass =  TypeLiteral.create(new ParameterizedTypeImpl(Event.class, resourceType));
 	}
 	
 	public Future<ResourceList<T>> list() {
 		return sendRequest(new KubernetesApiRequest(HttpMethod.GET, 
-				"/api/v1/"+resourceName,null),resourceListClass);
+				resource(),null),resourceListClass);
 	}
 	
+	private String resource() {
+		return (core?"/api/":"/apis/")+api+"/"+resourceName;
+	}
+
 	public Observable<T> watch() {
 		return watch(null);
 	}
 	
 	public Observable<T> watch(String version) {
 		return watch(version, newVersion->new KubernetesWatchApiRequest(
-				"/api/v1/"+resourceName,
-				newVersion));
+				resource(),newVersion));
 	}
 	
 	protected <O> Future<O> sendRequest(KubernetesApiRequest apiRequest,TypeLiteral<O> tpyeLit) {

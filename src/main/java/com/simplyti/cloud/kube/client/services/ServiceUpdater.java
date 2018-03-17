@@ -12,10 +12,10 @@ import com.simplyti.cloud.kube.client.domain.ServicePort;
 
 public class ServiceUpdater extends AbstractUpdater<Service,ServiceUpdater> implements ServiceCreationBuilder<ServiceUpdater>{
 
-	public ServiceUpdater(InternalClient client,
+	public ServiceUpdater(InternalClient client,String api,
 			String namespace, String name, String resourceName, TypeLiteral<Service> resourceClass,
 			ResourceSupplier<Service, ?,?> supplier) {
-		super(client, namespace, name, resourceName, resourceClass,supplier);
+		super(client, api, namespace, name, resourceName, resourceClass,supplier);
 	}
 
 	public ServicePortCreationBuilder<ServiceUpdater> addPort() {

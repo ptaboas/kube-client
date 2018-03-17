@@ -15,7 +15,7 @@ public class DefaultNamespacesApi extends AbstractKubeApi<Namespace> implements 
 	private static final TypeLiteral<Status> STATUS_TYPE = new TypeLiteral<Status>() {};
 
 	public DefaultNamespacesApi(InternalClient client) {
-		super(client,"namespaces");
+		super(client,true,"v1","namespaces");
 	}
 
 	@Override

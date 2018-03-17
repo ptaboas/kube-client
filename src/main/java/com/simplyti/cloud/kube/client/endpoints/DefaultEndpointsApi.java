@@ -6,13 +6,15 @@ import com.simplyti.cloud.kube.client.domain.Endpoint;
 
 public class DefaultEndpointsApi extends AbstractAllKubeApi<Endpoint,EndpointCreationBuilder,EndpointUpdater,NamespacedEndpointsApi> implements EndpointsApi {
 
+	private static final String API = "v1";
+
 	public DefaultEndpointsApi(InternalClient client) {
-		super(client,"endpoints");
+		super(client,API,"endpoints");
 	}
 
 	@Override
 	public EndpointCreationBuilder builder(String namespace) {
-		return new EndpointCreationBuilder(client,namespace,"endpoints");
+		return new EndpointCreationBuilder(client,API,namespace,"endpoints");
 	}
 	
 	public NamespacedEndpointsApi namespace(String namespace) {
@@ -21,7 +23,7 @@ public class DefaultEndpointsApi extends AbstractAllKubeApi<Endpoint,EndpointCre
 
 	@Override
 	public EndpointUpdater updateBuilder(String namespace, String name) {
-		return new EndpointUpdater(client,namespace,name,resourceName,resourceClass,this);
+		return new EndpointUpdater(client,API,namespace,name,resourceName,resourceClass,this);
 	}
 
 }

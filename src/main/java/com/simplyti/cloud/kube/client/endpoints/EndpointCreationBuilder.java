@@ -12,17 +12,16 @@ import com.simplyti.cloud.kube.client.domain.Subset;
 public class EndpointCreationBuilder extends AbstractCreationBuilder<Endpoint,EndpointCreationBuilder> {
 	
 	public static final String KIND = "Endpoints";
-	public static final String API = "v1";
 	
 	private final List<Subset> subsets = new ArrayList<>();
 
-	public EndpointCreationBuilder(InternalClient client, String namespace, String resourceName) {
-		super(client,namespace,resourceName);
+	public EndpointCreationBuilder(InternalClient client, String api, String namespace, String resourceName) {
+		super(client,api,namespace,resourceName);
 	}
 
 	@Override
 	protected Endpoint create(Metadata metadata) {
-		return new Endpoint(KIND,API,metadata,subsets);
+		return new Endpoint(KIND,api(),metadata,subsets);
 	}
 
 	public EndpointSubsetCreationBuilder withSubset() {

@@ -12,12 +12,11 @@ import com.simplyti.cloud.kube.client.domain.SecretData;
 public class SecretCreationBuilder extends AbstractCreationBuilder<Secret,SecretCreationBuilder>{
 	
 	public static final String KIND = "Secret";
-	public static final String API = "v1";
 	
 	private final Map<String, SecretData> data = Maps.newHashMap();
 
-	public SecretCreationBuilder(InternalClient client, String namespace, String resourceName) {
-		super(client,namespace,resourceName);
+	public SecretCreationBuilder(InternalClient client, String api, String namespace, String resourceName) {
+		super(client,api,namespace,resourceName);
 	}
 	
 	public SecretCreationBuilder withData(String key, String str){
@@ -27,7 +26,7 @@ public class SecretCreationBuilder extends AbstractCreationBuilder<Secret,Secret
 
 	@Override
 	protected Secret create(Metadata metadata) {
-		return new Secret(KIND, API, metadata, data);
+		return new Secret(KIND, api(), metadata, data);
 	}
 
 }

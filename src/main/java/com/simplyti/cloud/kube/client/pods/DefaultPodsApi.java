@@ -6,13 +6,15 @@ import com.simplyti.cloud.kube.client.domain.Pod;
 
 public class DefaultPodsApi extends AbstractAllKubeApi<Pod,PodCreationBuilder,PodUpdater,NamespacedPodsApi> implements PodsApi {
 
+	private static final String API = "v1";
+	
 	public DefaultPodsApi(InternalClient client) {
-		super(client,"pods");
+		super(client,API,"pods");
 	}
 
 	@Override
 	public PodCreationBuilder builder(String namespace) {
-		return new PodCreationBuilder(client,namespace);
+		return new PodCreationBuilder(client,API,namespace);
 	}
 
 	@Override
@@ -22,7 +24,7 @@ public class DefaultPodsApi extends AbstractAllKubeApi<Pod,PodCreationBuilder,Po
 
 	@Override
 	public PodUpdater updateBuilder(String namespace, String name) {
-		return new PodUpdater(client,namespace,name,resourceName,resourceClass,this);
+		return new PodUpdater(client,API, namespace,name,resourceName,resourceClass,this);
 	}
 	
 }

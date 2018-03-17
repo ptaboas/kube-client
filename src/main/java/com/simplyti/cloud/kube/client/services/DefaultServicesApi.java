@@ -6,13 +6,15 @@ import com.simplyti.cloud.kube.client.domain.Service;
 
 public class DefaultServicesApi extends AbstractAllKubeApi<Service,DefaultServiceCreationBuilder,ServiceUpdater, NamespacedServicesApi> implements ServicesApi {
 
+	private static final String API = "v1";
+	
 	public DefaultServicesApi(InternalClient client) {
-		super(client,"services");
+		super(client,API,"services");
 	}
 
 	@Override
 	public DefaultServiceCreationBuilder builder(String namespace) {
-		return new DefaultServiceCreationBuilder(client,namespace,resourceName);
+		return new DefaultServiceCreationBuilder(client,API,namespace,resourceName);
 	}
 
 	@Override
@@ -22,7 +24,7 @@ public class DefaultServicesApi extends AbstractAllKubeApi<Service,DefaultServic
 
 	@Override
 	public ServiceUpdater updateBuilder(String namespace, String name) {
-		return new ServiceUpdater(client,namespace,name,resourceName,resourceClass,this);
+		return new ServiceUpdater(client,API,namespace,name,resourceName,resourceClass,this);
 	}
 
 }

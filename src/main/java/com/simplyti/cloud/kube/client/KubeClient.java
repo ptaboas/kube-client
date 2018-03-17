@@ -16,6 +16,8 @@ import com.simplyti.cloud.kube.client.domain.Probe;
 import com.simplyti.cloud.kube.client.domain.SecretData;
 import com.simplyti.cloud.kube.client.endpoints.DefaultEndpointsApi;
 import com.simplyti.cloud.kube.client.endpoints.EndpointsApi;
+import com.simplyti.cloud.kube.client.ingresses.DefaultIngressesApi;
+import com.simplyti.cloud.kube.client.ingresses.IngressesApi;
 import com.simplyti.cloud.kube.client.namespaces.DefaultNamespacesApi;
 import com.simplyti.cloud.kube.client.namespaces.NamespacesApi;
 import com.simplyti.cloud.kube.client.pods.DefaultPodsApi;
@@ -43,6 +45,7 @@ public class KubeClient {
 	private final DefaultNamespacesApi namespaces;
 	private final DefaultSecretsApi secrets;
 	private final DefaultServiceAccountsApi serviceaccounts;
+	private final DefaultIngressesApi ingresses;
 	
 	@SuppressWarnings("unchecked")
 	public KubeClient(EventLoopGroup eventLoopGroup, ApiServer server,boolean verbose, Supplier<String> tokenProvider){
@@ -53,6 +56,7 @@ public class KubeClient {
 		this.namespaces = new DefaultNamespacesApi(internalClient);
 		this.secrets = new DefaultSecretsApi(internalClient);
 		this.serviceaccounts = new DefaultServiceAccountsApi(internalClient);
+		this.ingresses = new DefaultIngressesApi(internalClient);
 		
 		JsoniterSpi.registerTypeDecoder(LocalDateTime.class, iter->LocalDateTime.ofInstant(Instant.parse(iter.readString()), ZoneOffset.UTC));
 		JsoniterSpi.registerTypeDecoder(PodPhase.class, iter->PodPhase.valueOf(iter.readString().toUpperCase()));
@@ -107,13 +111,17 @@ public class KubeClient {
 	public ServiceAccountsApi serviceaccounts() {
 		return serviceaccounts;
 	}
+	
+	public IngressesApi ingresses() {
+		return ingresses;
+	}
 
 	public void close() {
 		this.internalClient.close();
 	}
 
 	public NamespacedClient namespace(String namespace) {
-		return new NamespacedClient(internalClient,namespace,services,pods,endpoints,secrets,serviceaccounts);
+		return new NamespacedClient(internalClient,namespace,services,pods,endpoints,secrets,serviceaccounts,ingresses);
 	}
 	
 	public static KubeClientBuilder builder() {

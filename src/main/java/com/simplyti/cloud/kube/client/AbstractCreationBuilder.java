@@ -14,16 +14,24 @@ import io.netty.util.concurrent.Future;
 
 public abstract class AbstractCreationBuilder<T,B extends CreationBuilder<T>> implements CreationBuilder<T>{
 	
+	private final boolean core;
 	private final InternalClient client;
 	private final TypeLiteral<T> resourceClass;
+	private final String api;
 	private final String namespace;
 	private final String resoueceName;
 	
 	private String name;
 	private Map<String,String> labels;
+	
+	public AbstractCreationBuilder(InternalClient client, String api, String namespace ,String resoueceName){
+		this(client,true,api,namespace,resoueceName);
+	}
 
 	@SuppressWarnings("unchecked")
-	public AbstractCreationBuilder(InternalClient client, String namespace, String resoueceName){
+	public AbstractCreationBuilder(InternalClient client, boolean core, String api, String namespace ,String resoueceName){
+		this.core=core;
+		this.api=api;
 		this.namespace=namespace;
 		this.resoueceName=resoueceName;
 		this.client=client;
@@ -52,7 +60,11 @@ public abstract class AbstractCreationBuilder<T,B extends CreationBuilder<T>> im
 	public Future<T> create() {
 		T resource = create(Metadata.builder().namespace(namespace).name(name).labels(labels).build());
 		return client.sendRequest(new KubernetesApiRequest(HttpMethod.POST, 
-				"/api/v1/namespaces/"+namespace+"/"+resoueceName,resource),resourceClass);
+				(core?"/api/":"/apis/")+api+"/namespaces/"+namespace+"/"+resoueceName,resource),resourceClass);
+	}
+	
+	public String api() {
+		return api;
 	}
 
 	protected abstract T create(Metadata metadata);

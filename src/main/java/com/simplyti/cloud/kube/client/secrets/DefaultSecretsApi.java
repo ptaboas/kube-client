@@ -6,13 +6,15 @@ import com.simplyti.cloud.kube.client.domain.Secret;
 
 public class DefaultSecretsApi extends AbstractAllKubeApi<Secret,SecretCreationBuilder,SecretUpdater,NamespacedSecretsApi> implements SecretsApi {
 
+	private static final String API = "v1";
+	
 	public DefaultSecretsApi(InternalClient client) {
-		super(client,"secrets");
+		super(client,API,"secrets");
 	}
 
 	@Override
 	public SecretCreationBuilder builder(String namespace) {
-		return new SecretCreationBuilder(client,namespace,"secrets");
+		return new SecretCreationBuilder(client,API,namespace,"secrets");
 	}
 
 	@Override
@@ -22,7 +24,7 @@ public class DefaultSecretsApi extends AbstractAllKubeApi<Secret,SecretCreationB
 
 	@Override
 	public SecretUpdater updateBuilder(String namespace, String name) {
-		return new SecretUpdater(client,namespace,name,resourceName,resourceClass,this);
+		return new SecretUpdater(client,API,namespace,name,resourceName,resourceClass,this);
 	}
 
 }

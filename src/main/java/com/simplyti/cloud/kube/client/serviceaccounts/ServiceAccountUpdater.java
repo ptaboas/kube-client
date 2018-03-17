@@ -10,10 +10,10 @@ import com.simplyti.cloud.kube.client.domain.ServiceAccount;
 
 public class ServiceAccountUpdater extends AbstractUpdater<ServiceAccount,ServiceAccountUpdater>{
 
-	public ServiceAccountUpdater(InternalClient client,
+	public ServiceAccountUpdater(InternalClient client, String api,
 			String namespace, String name, String resourceName, TypeLiteral<ServiceAccount> resourceClass,
 			ResourceSupplier<ServiceAccount, ?,?> supplier) {
-		super(client, namespace, name, resourceName, resourceClass,supplier);
+		super(client, api, namespace, name, resourceName, resourceClass,supplier);
 	}
 
 	public ServiceAccountUpdater addSecret(String secret) {

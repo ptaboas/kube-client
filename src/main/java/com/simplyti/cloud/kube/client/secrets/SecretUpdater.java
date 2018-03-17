@@ -10,9 +10,9 @@ import com.simplyti.cloud.kube.client.domain.SecretData;
 
 public class SecretUpdater extends AbstractUpdater<Secret,SecretUpdater>{
 
-	public SecretUpdater(InternalClient client, String namespace, String name, String resourceName,
+	public SecretUpdater(InternalClient client,String api, String namespace, String name, String resourceName,
 			TypeLiteral<Secret> resourceClass,ResourceSupplier<Secret, ?,?> supplier) {
-		super(client, namespace, name, resourceName, resourceClass,supplier);
+		super(client, api, namespace, name, resourceName, resourceClass,supplier);
 	}
 
 	public SecretUpdater addData(String k, String str) {

@@ -13,17 +13,16 @@ import com.simplyti.cloud.kube.client.domain.PodSpec;
 public class PodCreationBuilder extends AbstractCreationBuilder<Pod,PodCreationBuilder>{
 	
 	public static final String KIND = "Pod";
-	public static final String API = "v1";
 	
 	private final List<Container> containers = new ArrayList<>();
 
-	public PodCreationBuilder(InternalClient client, String namespace) {
-		super(client,namespace,"pods");
+	public PodCreationBuilder(InternalClient client, String api, String namespace) {
+		super(client,api,namespace,"pods");
 	}
 
 	@Override
 	protected Pod create(Metadata metadata) {
-		return new Pod(KIND, API, 
+		return new Pod(KIND, api(), 
 				metadata,
 				PodSpec.builder()
 				.automountServiceAccountToken(false)

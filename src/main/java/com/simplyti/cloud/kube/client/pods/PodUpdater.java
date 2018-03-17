@@ -8,9 +8,9 @@ import com.simplyti.cloud.kube.client.domain.Pod;
 
 public class PodUpdater extends AbstractUpdater<Pod,PodUpdater>{
 
-	public PodUpdater(InternalClient client, String namespace, String name, String resourceName,
+	public PodUpdater(InternalClient client,String api, String namespace, String name, String resourceName,
 			TypeLiteral<Pod> resourceClass,ResourceSupplier<Pod, ?,?> supplier) {
-		super(client, namespace, name, resourceName, resourceClass,supplier);
+		super(client, api, namespace, name, resourceName, resourceClass,supplier);
 	}
 
 }
