@@ -51,8 +51,7 @@ public class AbstractKubeApi<T extends KubernetesResource> {
 	}
 	
 	public Observable<T> watch(String version) {
-		return watch(version, newVersion->new KubernetesWatchApiRequest(
-				resource(),newVersion));
+		return watch(version, newVersion->new KubernetesWatchApiRequest(resource(),newVersion));
 	}
 	
 	protected <O> Future<O> sendRequest(KubernetesApiRequest apiRequest,TypeLiteral<O> tpyeLit) {

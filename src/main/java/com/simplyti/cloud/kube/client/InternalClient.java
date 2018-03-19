@@ -1,5 +1,10 @@
 package com.simplyti.cloud.kube.client;
 
+import static io.vavr.API.$;
+import static io.vavr.API.Case;
+import static io.vavr.API.Match;
+import static io.vavr.Predicates.instanceOf;
+
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -19,6 +24,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.pool.SimpleChannelPool;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
@@ -53,7 +60,9 @@ public class InternalClient {
 	}
 	
 	private Class<? extends Channel> channelClass() {
-		return NioSocketChannel.class;
+		return Match(eventLoopGroup).of(
+				Case($(instanceOf(EpollEventLoopGroup.class)), EpollSocketChannel.class),
+				Case($(), NioSocketChannel.class));
 	}
 	
 	public <T> Future<T> sendRequest(KubernetesApiRequest request, TypeLiteral<T> responseClass) {
