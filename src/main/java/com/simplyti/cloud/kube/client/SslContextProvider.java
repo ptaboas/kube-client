@@ -18,6 +18,7 @@ import com.google.common.base.MoreObjects;
 
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
@@ -47,6 +48,13 @@ public class SslContextProvider implements Supplier<SslContext>{
 				log.warn("Cannot create ssl context",e);
 			}finally{
 				try {inputStream.close();} catch (IOException e) {}
+			}
+		} else {
+			try {
+				this.sslCtx = SslContextBuilder.forClient()
+							.trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+			} catch (SSLException e) {
+				log.warn("Cannot create ssl context",e);
 			}
 		}
 	}

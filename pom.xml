@@ -165,6 +165,7 @@
 							<goal>exec</goal>
 						</goals>
 						<configuration>
+							<skip>${maven.test.skip}</skip>
 							<arguments>
 								<argument>pull</argument>
 							</arguments>
@@ -178,6 +179,7 @@
 							<goal>exec</goal>
 						</goals>
 						<configuration>
+							<skip>${maven.test.skip}</skip>
 							<async>true</async>
 							<asyncDestroyOnShutdown>true</asyncDestroyOnShutdown>
 							<arguments>
@@ -193,6 +195,7 @@
 							<goal>exec</goal>
 						</goals>
 						<configuration>
+							<skip>${maven.test.skip}</skip>
 							<arguments>
 								<argument>down</argument>
 							</arguments>

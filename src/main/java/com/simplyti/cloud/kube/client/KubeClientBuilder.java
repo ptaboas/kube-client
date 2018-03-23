@@ -19,7 +19,7 @@ public class KubeClientBuilder {
 	private static final Integer DEFAULT_UNSECURE_PORT = 8080;
 	private static final String SECURE_SCHEMA = "https";
 	private static final Integer DEFAULT_SECURE_PORT = 443;
-	private static final ApiServer DEFAULT_SERVER_ADDRESS = new ApiServer("kubernetes.default", DEFAULT_SECURE_PORT,new SslContextProvider(false,null));
+	private static final ApiServer DEFAULT_SERVER_ADDRESS = new ApiServer("kubernetes.default", DEFAULT_SECURE_PORT,new SslContextProvider(true,null));
 	
 	private String host;
 	private Integer port;
