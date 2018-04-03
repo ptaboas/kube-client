@@ -43,6 +43,7 @@ public class ClientStepDefinitions {
 	private static final String SERVER = "server";
 	private static final String CA_FILE = "caFile";
 	private static final String TOKEN_FILE = "tokenFile";
+	private static final String TOKEN = "token";
 	
 	@Inject
 	private KubeClient client;
@@ -64,10 +65,13 @@ public class ClientStepDefinitions {
 	    		.withLog4J2Logger();
 	    builder.server(options.get(SERVER));
 	    if(options.containsKey(CA_FILE)){
-	    	builder.caFile(BUILD_DIR.resolve(options.get(CA_FILE)).toString());
+	    		builder.caFile(BUILD_DIR.resolve(options.get(CA_FILE)).toString());
 	    }
 	    if(options.containsKey(TOKEN_FILE)){
-	    	builder.tokenFile(BUILD_DIR.resolve(options.get(TOKEN_FILE)).toString());
+	    		builder.tokenFile(BUILD_DIR.resolve(options.get(TOKEN_FILE)).toString());
+	    }
+	    if(options.containsKey(TOKEN)){
+	    		builder.token((String) scenarioData.get(options.get(TOKEN)));
 	    }
 	    scenarioData.put(key, builder.build());
 	}
@@ -115,6 +119,14 @@ public class ClientStepDefinitions {
 		String secretName = Iterables.getFirst(serviceAccount.getSecrets(), null).getName();
 		Secret secret = client.secrets().namespace("default").get(secretName).await().getNow();
 		FileUtils.writeByteArrayToFile(BUILD_DIR.resolve(file).toFile(), secret.getData().get("token").getData());
+	}
+	
+	@Given("^a valid service account token \"([^\"]*)\"$")
+	public void aValidServiceAccountToken(String key) throws Throwable {
+		ServiceAccount serviceAccount = client.namespace("default").serviceaccounts().get("default").await().getNow();
+		String secretName = Iterables.getFirst(serviceAccount.getSecrets(), null).getName();
+		Secret secret = client.secrets().namespace("default").get(secretName).await().getNow();
+		scenarioData.put(key, secret.getData().get("token").asString(CharsetUtil.UTF_8));
 	}
 	
 	@Given("^exist a service account token in file \"([^\"]*)\" with content \"([^\"]*)\"$")

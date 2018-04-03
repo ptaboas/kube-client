@@ -7,6 +7,8 @@ public interface CreationBuilder<T> {
 	CreationBuilder<T> withName(String name);
 	
 	CreationBuilder<T> addLabel(String name,String value);
+	
+	CreationBuilder<T> addAnnotation(String name,String value);
 
 	Future<T> create();
 

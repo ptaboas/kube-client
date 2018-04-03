@@ -32,6 +32,7 @@ import com.simplyti.cloud.kube.client.domain.Probe;
 import com.simplyti.cloud.kube.client.domain.ResourceList;
 import com.simplyti.cloud.kube.client.domain.Status;
 import com.simplyti.cloud.kube.client.domain.TcpProbe;
+import com.simplyti.cloud.kube.client.pods.PodContainerCreationBuilder;
 import com.simplyti.cloud.kube.client.pods.PodCreationBuilder;
 import com.simplyti.cloud.kube.client.pods.PodUpdater;
 
@@ -142,6 +143,21 @@ public class PodsStepDefinitions {
 		assertThat(result.getNow(),notNullValue());
 	}
 	
+
+	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\", image \"([^\"]*)\" and environment variables \"([^\"]*)\"$")
+	public void iCreateAPodInNamespaceWithNameImageAndEnvironmentVariables(String namespace, String name, String image, String envStr) throws Throwable {
+		Map<String, String> envs = Splitter.on(',').withKeyValueSeparator('=').split(envStr);
+		PodContainerCreationBuilder builder = client.namespace(namespace).pods().builder()
+				.withName(name)
+				.withContainer()
+					.withImage(image);
+		envs.forEach((k,v)->builder.withEnvironmetVariable(k,v));
+		Future<Pod> result = builder.create()
+				.create().await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
+	}
+	
 	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\", image \"([^\"]*)\" and tcp readiness probe in port (\\d+)$")
 	public void iCreateAPodInNamespaceWithNameImageAndHttpReadinessProbe(String namespace, String name, String image, int port) throws Throwable {
 		Future<Pod> result = client.namespace(namespace).pods().builder()
@@ -149,6 +165,41 @@ public class PodsStepDefinitions {
 				.withContainer()
 					.withImage(image)
 					.withReadinessProbe(Probe.tcp(port,1,1,1,1))
+					.create()
+				.create().await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
+	}
+	
+	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\", image \"([^\"]*)\" and volume mount \"([^\"]*)\"$")
+	public void iCreateAPodInNamespaceWithNameImageAndVolumeMount(String namespace, String name, String image, String mount) throws Throwable {
+		Future<Pod> result = client.namespace(namespace).pods().builder()
+				.withName(name)
+				.withContainer()
+					.withImage(image)
+					.withVolumeMount("vol",mount)
+					.create()
+				.withVolume()
+					.withName("vol")
+					.emptyDir()
+					.create()
+				.create().await();
+		assertTrue(result.isSuccess());
+		assertThat(result.getNow(),notNullValue());
+	}
+	
+	@When("^I create a pod in namespace \"([^\"]*)\" with name \"([^\"]*)\", image \"([^\"]*)\" and secret \"([^\"]*)\" mounted in \"([^\"]*)\"$")
+	public void iCreateAPodInNamespaceWithNameImageAndSecretMountedIn(String namespace, String name, String image, String secret, String path) throws Throwable {
+		Future<Pod> result = client.namespace(namespace).pods().builder()
+				.withName(name)
+				.withContainer()
+					.withImage(image)
+					.withVolumeMount("vol",path)
+					.create()
+				.withVolume()
+					.withName("vol")
+					.secret()
+					.name(secret)
 					.create()
 				.create().await();
 		assertTrue(result.isSuccess());

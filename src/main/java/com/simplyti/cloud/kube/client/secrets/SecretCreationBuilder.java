@@ -15,6 +15,8 @@ public class SecretCreationBuilder extends AbstractCreationBuilder<Secret,Secret
 	
 	private final Map<String, SecretData> data = Maps.newHashMap();
 
+	private String type;
+
 	public SecretCreationBuilder(InternalClient client, String api, String namespace, String resourceName) {
 		super(client,api,namespace,resourceName);
 	}
@@ -26,7 +28,12 @@ public class SecretCreationBuilder extends AbstractCreationBuilder<Secret,Secret
 
 	@Override
 	protected Secret create(Metadata metadata) {
-		return new Secret(KIND, api(), metadata, data);
+		return new Secret(KIND, api(), metadata, data, type);
+	}
+
+	public SecretCreationBuilder withType(String type) {
+		this.type=type;
+		return this;
 	}
 
 }

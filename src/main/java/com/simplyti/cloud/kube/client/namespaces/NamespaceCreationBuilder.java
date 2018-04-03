@@ -24,6 +24,7 @@ public class NamespaceCreationBuilder implements CreationBuilder<Namespace> {
 	
 	private String name;
 	private Map<String,String> labels;
+	private Map<String,String> annotations;
 	
 	public NamespaceCreationBuilder(InternalClient client){
 		this.client=client;
@@ -37,7 +38,9 @@ public class NamespaceCreationBuilder implements CreationBuilder<Namespace> {
 
 	@Override
 	public Future<Namespace> create() {
-		Namespace namespace = new Namespace(KIND, API, Metadata.builder().name(name).labels(labels).build());
+		Namespace namespace = new Namespace(KIND, API, Metadata.builder().name(name)
+				.labels(labels)
+				.annotations(annotations).build());
 		return client.sendRequest(new KubernetesApiRequest(HttpMethod.POST, "/api/v1/namespaces",namespace),TYPE);
 	}
 
@@ -47,6 +50,15 @@ public class NamespaceCreationBuilder implements CreationBuilder<Namespace> {
 			labels=Maps.newHashMap();
 		}
 		labels.put(name, value);
+		return this;
+	}
+
+	@Override
+	public CreationBuilder<Namespace> addAnnotation(String name, String value) {
+		if(annotations==null){
+			annotations=Maps.newHashMap();
+		}
+		annotations.put(name, value);
 		return this;
 	}
 

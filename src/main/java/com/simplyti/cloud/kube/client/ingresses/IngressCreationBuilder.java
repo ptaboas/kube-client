@@ -8,12 +8,14 @@ import com.simplyti.cloud.kube.client.InternalClient;
 import com.simplyti.cloud.kube.client.domain.Ingress;
 import com.simplyti.cloud.kube.client.domain.IngressRule;
 import com.simplyti.cloud.kube.client.domain.IngressSpec;
+import com.simplyti.cloud.kube.client.domain.IngressTls;
 import com.simplyti.cloud.kube.client.domain.Metadata;
 
 public class IngressCreationBuilder extends AbstractCreationBuilder<Ingress,IngressCreationBuilder>{
 	
 	public static final String KIND = "Ingress";
 	
+	private final List<IngressTls> tlss = new ArrayList<>();
 	private final List<IngressRule> rules = new ArrayList<>();
 
 	public IngressCreationBuilder(InternalClient client,String api, String namespace, String resoueceName) {
@@ -22,15 +24,24 @@ public class IngressCreationBuilder extends AbstractCreationBuilder<Ingress,Ingr
 
 	@Override
 	protected Ingress create(Metadata metadata) {
-		return new Ingress(KIND,api(),metadata,IngressSpec.builder().rules(rules).build());
+		return new Ingress(KIND,api(),metadata,IngressSpec.builder().tls(tlss).rules(rules).build());
 	}
 
 	public IngressRuleCreationBuilder withRule() {
 		return new IngressRuleCreationBuilder(this);
 	}
+	
+	public IngressTlsCreationBuilder withTls() {
+		return new IngressTlsCreationBuilder(this);
+	}
 
 	public IngressCreationBuilder addRule(IngressRule rule) {
 		rules.add(rule);
+		return this;
+	}
+
+	public IngressCreationBuilder addTls(IngressTls tls) {
+		tlss.add(tls);
 		return this;
 	}
 

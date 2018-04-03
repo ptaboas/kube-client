@@ -11,9 +11,12 @@ import java.util.function.Supplier;
 import com.jsoniter.spi.JsoniterSpi;
 import com.jsoniter.spi.TypeLiteral;
 import com.simplyti.cloud.kube.client.JsonPatch.PatchOperation;
+import com.simplyti.cloud.kube.client.domain.EmptyDirVolume;
 import com.simplyti.cloud.kube.client.domain.PodPhase;
 import com.simplyti.cloud.kube.client.domain.Probe;
 import com.simplyti.cloud.kube.client.domain.SecretData;
+import com.simplyti.cloud.kube.client.domain.SecretVolume;
+import com.simplyti.cloud.kube.client.domain.Volume;
 import com.simplyti.cloud.kube.client.endpoints.DefaultEndpointsApi;
 import com.simplyti.cloud.kube.client.endpoints.EndpointsApi;
 import com.simplyti.cloud.kube.client.ingresses.DefaultIngressesApi;
@@ -82,6 +85,10 @@ public class KubeClient {
 		
 		JsoniterSpi.registerTypeEncoder(SecretData.class, (value,stream)->stream.writeVal(Base64.getEncoder().encodeToString(SecretData.class.cast(value).getData())));
 		JsoniterSpi.registerTypeDecoder(SecretData.class, iter->SecretData.of(Base64.getDecoder().decode(iter.readString().getBytes(CharsetUtil.UTF_8))));
+	
+		JsoniterSpi.registerTypeImplementation(Volume.class, EmptyDirVolume.class);
+		JsoniterSpi.registerTypeImplementation(Volume.class, SecretVolume.class);
+		
 	}
 	
 	public Future<String> health() {

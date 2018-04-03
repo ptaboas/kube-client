@@ -4,6 +4,12 @@ Scenario: Create ingress
 	Given a namespace "acceptance"
 	When I create an ingress in namespace "acceptance" with name "test", host "example.org" and backend "test:80"
 	Then I check that exist an ingress "#ingress" with name "test" in namespace "acceptance"
+	
+Scenario: Create ingress with annotations
+	Given a namespace "acceptance"
+	When I create an ingress in namespace "acceptance" with name "test", host "example.org", backend "test:80" and annotations
+	| ingress.kubernetes.io/auth-type | basic |
+	Then I check that exist an ingress "#ingress" with name "test" in namespace "acceptance"
 
 Scenario: Observe ingresses
 	Given a namespace "acceptance"

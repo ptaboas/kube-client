@@ -22,6 +22,19 @@ Scenario Outline: Create a secured simple client
 		| server 				|
 		| https://127.0.0.1:443 |
 		| https://127.0.0.1 |
+		
+Scenario Outline: Create client with literal token
+	Given exist a service account CA certificate in file "serviceaccount/ca.crt"
+	And a valid service account token "#token"
+	When I crete a kubernetes client "#client" with next options:
+		| server 	| <server> |
+		| caFile 	| serviceaccount/ca.crt |
+		| token		| #token 	|
+	Then I check that I get service list successfully using client "#client"
+	Examples:
+		| server 				|
+		| https://127.0.0.1:443 |
+		| https://127.0.0.1 |
 	
 Scenario: Unauthorized request
 	Given exist a service account CA certificate in file "serviceaccount/ca.crt"

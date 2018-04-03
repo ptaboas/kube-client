@@ -23,6 +23,7 @@ public abstract class AbstractCreationBuilder<T,B extends CreationBuilder<T>> im
 	
 	private String name;
 	private Map<String,String> labels;
+	private Map<String,String> annotations;
 	
 	public AbstractCreationBuilder(InternalClient client, String api, String namespace ,String resoueceName){
 		this(client,true,api,namespace,resoueceName);
@@ -55,10 +56,22 @@ public abstract class AbstractCreationBuilder<T,B extends CreationBuilder<T>> im
 		labels.put(name, value);
 		return (B) this;
 	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public B addAnnotation(String name,String value) {
+		if(annotations==null){
+			annotations=Maps.newHashMap();
+		}
+		annotations.put(name, value);
+		return (B) this;
+	}
 
 	@Override
 	public Future<T> create() {
-		T resource = create(Metadata.builder().namespace(namespace).name(name).labels(labels).build());
+		T resource = create(Metadata.builder().namespace(namespace).name(name)
+				.labels(labels)
+				.annotations(annotations).build());
 		return client.sendRequest(new KubernetesApiRequest(HttpMethod.POST, 
 				(core?"/api/":"/apis/")+api+"/namespaces/"+namespace+"/"+resoueceName,resource),resourceClass);
 	}

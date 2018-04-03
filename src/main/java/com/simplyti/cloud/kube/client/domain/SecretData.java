@@ -28,4 +28,8 @@ public class SecretData {
 		return new SecretData(data);
 	}
 
+	public String asString(Charset charset) {
+		return new String(data,charset);
+	}
+
 }

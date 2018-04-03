@@ -100,3 +100,26 @@ Scenario: Create pod with tcp readyness probe
 	Then I check that exist a pod "#pod" with name "test" in namespace "acceptance"
 	And I check that pod "#pod" has tcp readiness probe in port 80
 	
+Scenario: Create pod with environment variables
+	Given a namespace "acceptance"
+	When I create a pod in namespace "acceptance" with name "test", image "nginx" and environment variables "ENV=test"
+	Then I check that exist a pod "#pod" with name "test" in namespace "acceptance"
+	And I check that pod "#pod" has "RUNNING" state
+	When I execute next command "printenv ENV" in pod "#pod" getting result "#result"
+	Then I check command result "#result" contains value "test"
+	
+Scenario:  Create pod with volume mount
+	Given a namespace "acceptance"
+	When I create a pod in namespace "acceptance" with name "test", image "nginx" and volume mount "/tmp"
+	Then I check that exist a pod "#pod" with name "test" in namespace "acceptance"
+	And I check that pod "#pod" has "RUNNING" state
+	
+Scenario:  Create pod with secret volume mount
+	Given a namespace "acceptance"
+	When I create a secret in namespace "acceptance" with name "mysecret" and properties
+		| user		| pepe			|
+		| password	| supersecret	|
+	When I create a pod in namespace "acceptance" with name "test", image "nginx" and secret "mysecret" mounted in "/tmp"
+	Then I check that exist a pod "#pod" with name "test" in namespace "acceptance"
+	And I check that pod "#pod" has "RUNNING" state
+	
