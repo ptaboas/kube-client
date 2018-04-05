@@ -40,7 +40,7 @@ public class NamespaceCreationBuilder implements CreationBuilder<Namespace> {
 	public Future<Namespace> create() {
 		Namespace namespace = new Namespace(KIND, API, Metadata.builder().name(name)
 				.labels(labels)
-				.annotations(annotations).build());
+				.annotations(annotations).build(),null);
 		return client.sendRequest(new KubernetesApiRequest(HttpMethod.POST, "/api/v1/namespaces",namespace),TYPE);
 	}
 
