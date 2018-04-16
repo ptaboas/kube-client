@@ -19,7 +19,7 @@ public class ServiceUpdater extends AbstractUpdater<Service,ServiceUpdater> impl
 	}
 
 	public ServicePortCreationBuilder<ServiceUpdater> addPort() {
-		return new ServicePortCreationBuilder<ServiceUpdater>(this);
+		return new ServicePortCreationBuilder<>(this);
 	}
 	
 	public ServiceUpdater setServicePort(Collection<ServicePort> servicePorts) {

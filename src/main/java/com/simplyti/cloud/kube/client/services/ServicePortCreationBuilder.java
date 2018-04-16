@@ -9,7 +9,7 @@ public class ServicePortCreationBuilder<T extends ServiceCreationBuilder<T>> {
 	private Integer port;
 	private String name;
 	private ServiceProtocol protocol;
-	private String targetPort;
+	private Object targetPort;
 	
 	public ServicePortCreationBuilder(ServiceCreationBuilder<T> builder){
 		this.builder=builder;
@@ -30,7 +30,7 @@ public class ServicePortCreationBuilder<T extends ServiceCreationBuilder<T>> {
 		return this;
 	}
 	
-	public ServicePortCreationBuilder<T> targetPort(String targetPort) {
+	public ServicePortCreationBuilder<T> targetPort(Object targetPort) {
 		this.targetPort=targetPort;
 		return this;
 	}

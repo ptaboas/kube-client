@@ -4,10 +4,10 @@ import com.simplyti.cloud.kube.client.domain.IngressTls;
 
 public class IngressTlsCreationBuilder {
 
-	private final IngressCreationBuilder builder;
+	private final DefaultIngressCreationBuilder builder;
 	private String secretName;
 
-	public IngressTlsCreationBuilder(IngressCreationBuilder builder) {
+	public IngressTlsCreationBuilder(DefaultIngressCreationBuilder builder) {
 		this.builder=builder;
 	}
 	
@@ -16,7 +16,7 @@ public class IngressTlsCreationBuilder {
 		return this;
 	}
 
-	public IngressCreationBuilder create() {
+	public DefaultIngressCreationBuilder create() {
 		return builder.addTls(new IngressTls(null, secretName));
 	}
 

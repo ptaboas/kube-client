@@ -7,36 +7,36 @@ import com.simplyti.cloud.kube.client.domain.IngressHttp;
 import com.simplyti.cloud.kube.client.domain.IngressPath;
 import com.simplyti.cloud.kube.client.domain.IngressRule;
 
-public class IngressRuleCreationBuilder {
+public class IngressRuleCreationBuilder<T extends IngressCreationBuilder<T>> {
 	
-	private final IngressCreationBuilder builder;
+	private final IngressCreationBuilder<T> builder;
 	private final List<IngressPath> paths = new ArrayList<>();
 	private String host;
 
-	public IngressRuleCreationBuilder(IngressCreationBuilder builder) {
+	public IngressRuleCreationBuilder(IngressCreationBuilder<T> builder) {
 		this.builder=builder;
 	}
 	
-	public IngressCreationBuilder create() {
+	public T create() {
 		return builder.addRule(IngressRule.builder()
 				.host(host)
 				.http(IngressHttp.builder().paths(paths).build()).build());
 	}
 
-	public IngressRuleCreationBuilder withHost(String host) {
+	public IngressRuleCreationBuilder<T> withHost(String host) {
 		this.host=host;
 		return this;
 	}
 
-	public IngressPathCreationBuilder withPath() {
+	public IngressPathCreationBuilder<T> withPath() {
 		return withPath(null);
 	}
 	
-	public IngressPathCreationBuilder withPath(String path) {
-		return new IngressPathCreationBuilder(this,path);
+	public IngressPathCreationBuilder<T> withPath(String path) {
+		return new IngressPathCreationBuilder<>(this,path);
 	}
 
-	public IngressRuleCreationBuilder addPath(IngressPath path) {
+	public IngressRuleCreationBuilder<T> addPath(IngressPath path) {
 		this.paths.add(path);
 		return this;
 	}

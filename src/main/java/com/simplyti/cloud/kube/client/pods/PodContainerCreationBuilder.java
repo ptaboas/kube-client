@@ -6,10 +6,12 @@ import java.util.List;
 import com.google.common.base.MoreObjects;
 import com.simplyti.cloud.kube.client.domain.Container;
 import com.simplyti.cloud.kube.client.domain.ContainerPort;
+import com.simplyti.cloud.kube.client.domain.ContainerResources;
 import com.simplyti.cloud.kube.client.domain.EnvironmentVariable;
 import com.simplyti.cloud.kube.client.domain.EnvironmentVariableLiteral;
 import com.simplyti.cloud.kube.client.domain.ImagePullPolicy;
 import com.simplyti.cloud.kube.client.domain.Probe;
+import com.simplyti.cloud.kube.client.domain.ResourceRequirements;
 import com.simplyti.cloud.kube.client.domain.VolumeMount;
 
 public class PodContainerCreationBuilder {
@@ -25,6 +27,9 @@ public class PodContainerCreationBuilder {
 
 	private ImagePullPolicy imagePullPolicy;
 	private String[] command;
+
+	private ContainerResources containerResourcesLimit;
+	private ContainerResources containerResourcesRequest;
 
 	public PodContainerCreationBuilder(PodCreationBuilder builder) {
 		this.builder=builder;
@@ -52,6 +57,10 @@ public class PodContainerCreationBuilder {
 				.volumeMounts(volumeMounts)
 				.ports(containerPorts)
 				.imagePullPolicy(imagePullPolicy)
+				.resources(ResourceRequirements.builder()
+						.limits(containerResourcesLimit)
+						.requests(containerResourcesRequest)
+						.build())
 				.command(command)
 				.build());
 	}
@@ -105,6 +114,24 @@ public class PodContainerCreationBuilder {
 
 	public PodContainerCreationBuilder withCommand(String[] command) {
 		this.command=command;
+		return this;
+	}
+
+	public ContainerResourcesBuilder withRequestResources() {
+		return new ContainerResourcesBuilder(this, ContainerResourcesBuilder.Type.REQUEST);
+	}
+	
+	public ContainerResourcesBuilder withLimitResources() {
+		return new ContainerResourcesBuilder(this, ContainerResourcesBuilder.Type.LIMIT);
+	}
+
+	public PodContainerCreationBuilder setResourceLimit(ContainerResources containerResourcesLimit) {
+		this.containerResourcesLimit = containerResourcesLimit;
+		return this;
+	}
+
+	public PodContainerCreationBuilder setResourceRequest(ContainerResources containerResourcesRequest) {
+		this.containerResourcesRequest = containerResourcesRequest;
 		return this;
 	}
 

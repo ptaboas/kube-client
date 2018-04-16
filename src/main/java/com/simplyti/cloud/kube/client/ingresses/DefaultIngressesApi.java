@@ -4,7 +4,7 @@ import com.simplyti.cloud.kube.client.AbstractAllKubeApi;
 import com.simplyti.cloud.kube.client.InternalClient;
 import com.simplyti.cloud.kube.client.domain.Ingress;
 
-public class DefaultIngressesApi extends AbstractAllKubeApi<Ingress,IngressCreationBuilder,IngressUpdater,NamespacedIngressesApi> implements IngressesApi {
+public class DefaultIngressesApi extends AbstractAllKubeApi<Ingress,DefaultIngressCreationBuilder,IngressUpdater,NamespacedIngressesApi> implements IngressesApi {
 
 	private static final String API = "extensions/v1beta1";
 
@@ -13,8 +13,8 @@ public class DefaultIngressesApi extends AbstractAllKubeApi<Ingress,IngressCreat
 	}
 
 	@Override
-	public IngressCreationBuilder builder(String namespace) {
-		return new IngressCreationBuilder(client,API,namespace,"ingresses");
+	public DefaultIngressCreationBuilder builder(String namespace) {
+		return new DefaultIngressCreationBuilder(client,API,namespace,"ingresses");
 	}
 
 	@Override

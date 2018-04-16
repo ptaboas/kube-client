@@ -15,7 +15,7 @@ import com.simplyti.cloud.kube.client.domain.Event;
 import com.simplyti.cloud.kube.client.domain.Ingress;
 import com.simplyti.cloud.kube.client.domain.ResourceList;
 import com.simplyti.cloud.kube.client.domain.Status;
-import com.simplyti.cloud.kube.client.ingresses.IngressCreationBuilder;
+import com.simplyti.cloud.kube.client.ingresses.DefaultIngressCreationBuilder;
 
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -55,7 +55,7 @@ public class IngressStepDefinitions {
 	@When("^I create an ingress in namespace \"([^\"]*)\" with name \"([^\"]*)\", host \"([^\"]*)\", backend \"([^\"]*)\" and annotations$")
 	public void iCreateAnIngressInNamespaceWithNameHostBackendAndAnnotations(String namespace, String name, String host, String backend, Map<String,String> annotations) throws Throwable {
 		String[] hostPort = backend.split(":");
-		IngressCreationBuilder builder = client.namespace(namespace).ingresses().builder()
+		DefaultIngressCreationBuilder builder = client.namespace(namespace).ingresses().builder()
 			.withName(name);
 		annotations.forEach((ann,value)->builder.addAnnotation(ann, value));
 		Future<Ingress> result = 	builder.withRule()

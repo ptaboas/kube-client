@@ -11,7 +11,7 @@ import com.simplyti.cloud.kube.client.endpoints.EndpointCreationBuilder;
 import com.simplyti.cloud.kube.client.endpoints.EndpointUpdater;
 import com.simplyti.cloud.kube.client.endpoints.NamespacedEndpointsApi;
 import com.simplyti.cloud.kube.client.ingresses.DefaultNamespacedIngressesApi;
-import com.simplyti.cloud.kube.client.ingresses.IngressCreationBuilder;
+import com.simplyti.cloud.kube.client.ingresses.DefaultIngressCreationBuilder;
 import com.simplyti.cloud.kube.client.ingresses.IngressUpdater;
 import com.simplyti.cloud.kube.client.ingresses.NamespacedIngressesApi;
 import com.simplyti.cloud.kube.client.pods.DefaultNamespacedPodsApi;
@@ -40,12 +40,12 @@ public class NamespacedClient {
 	private final ResourceSupplier<Endpoint,EndpointCreationBuilder,EndpointUpdater> endpointsSupplier;
 	private final ResourceSupplier<Secret,SecretCreationBuilder,SecretUpdater> secretsSupplier;
 	private final ResourceSupplier<ServiceAccount,ServiceAccountCreationBuilder,ServiceAccountUpdater> serviceAccountsSupplier;
-	private final ResourceSupplier<Ingress,IngressCreationBuilder,IngressUpdater> ingressesSupplier;
+	private final ResourceSupplier<Ingress,DefaultIngressCreationBuilder,IngressUpdater> ingressesSupplier;
 
 	public NamespacedClient(InternalClient client, String namespace, ResourceSupplier<Service,DefaultServiceCreationBuilder,ServiceUpdater> servicesSupplier,
 			ResourceSupplier<Pod,PodCreationBuilder,PodUpdater> podsSupplier, ResourceSupplier<Endpoint,EndpointCreationBuilder,EndpointUpdater> endpointsSupplier,
 			ResourceSupplier<Secret,SecretCreationBuilder,SecretUpdater> secretsSupplier, ResourceSupplier<ServiceAccount,ServiceAccountCreationBuilder,ServiceAccountUpdater> serviceAccountsSupplier,
-			ResourceSupplier<Ingress,IngressCreationBuilder,IngressUpdater> ingressesSupplier) {
+			ResourceSupplier<Ingress,DefaultIngressCreationBuilder,IngressUpdater> ingressesSupplier) {
 		this.client=client;
 		this.namespace=namespace;
 		this.servicesSupplier=servicesSupplier;
