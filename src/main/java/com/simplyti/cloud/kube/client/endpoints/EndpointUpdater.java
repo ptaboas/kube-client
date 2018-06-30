@@ -23,5 +23,14 @@ public class EndpointUpdater extends AbstractUpdater<Endpoint,EndpointUpdater> {
 		addPatch(JsonPatch.add("/subsets/"+index+"/addresses/-", address));
 		return this;
 	}
+
+	public EndpointUpdater setAddresses(Address... addresses) {
+		return setAddresses(0, addresses);
+	}
+
+	private EndpointUpdater setAddresses(int index, Address[] addresses) {
+		this.addPatch(JsonPatch.replace("/subsets/"+index+"/addresses",addresses));
+		return this;
+	}
 	
 }
