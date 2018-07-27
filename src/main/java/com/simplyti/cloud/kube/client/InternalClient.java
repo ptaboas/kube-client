@@ -26,6 +26,8 @@ import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
+import io.netty.channel.kqueue.KQueueEventLoopGroup;
+import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.pool.SimpleChannelPool;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
@@ -62,6 +64,7 @@ public class InternalClient {
 	private Class<? extends Channel> channelClass() {
 		return Match(eventLoopGroup).of(
 				Case($(instanceOf(EpollEventLoopGroup.class)), EpollSocketChannel.class),
+				Case($(instanceOf(KQueueEventLoopGroup.class)), KQueueSocketChannel.class),
 				Case($(), NioSocketChannel.class));
 	}
 	
